@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AgendaTatiNails")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d1a21616e499fc65365b93f0bf31219dc989ed70")]
 [assembly: System.Reflection.AssemblyProductAttribute("AgendaTatiNails")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AgendaTatiNails")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
