@@ -78,7 +78,7 @@ namespace AgendaTatiNails.Controllers
 
                 // *** USA O MÉTODO CORRETO QUE RECEBE DICIONÁRIO E ID ***
                 if (_dataService.VerificarDisponibilidadeSlot(dataHoraInicio, duracaoServico, slotsOcupados, agendamentoIdSendoEditado))
-                // ******************************************************
+
                 {
                     horariosDisponiveis.Add(horarioInicio.ToString(@"hh\:mm"));
                 }
@@ -102,7 +102,7 @@ namespace AgendaTatiNails.Controllers
             var slotsOcupados = _dataService.ObterSlotsOcupadosComIdAgendamento(dataHoraAgendamento.Date);
             // *** USA O MÉTODO CORRETO QUE RECEBE DICIONÁRIO ***
             if (!_dataService.VerificarDisponibilidadeSlot(dataHoraAgendamento, duracaoServico, slotsOcupados)) // Sem ID a ignorar
-            // ************************************************
+
                 return Conflict(new { message = "Desculpe, este horário foi agendado. Escolha outro." });
 
             var novoAgendamento = new Agendamento
@@ -182,7 +182,7 @@ namespace AgendaTatiNails.Controllers
             var agendamentoOriginal = _dataService.ObterAgendamentoPorId(model.Id);
             if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out int clienteId)) {
                  Console.WriteLine("Editar Erro: Não foi possível obter ID do cliente.");
-                 return Unauthorized(); // Ou Forbid() dependendo da sua política
+                 return Unauthorized(); 
             }
             if (agendamentoOriginal == null || agendamentoOriginal.ClienteId != clienteId) {
                 Console.WriteLine($"Editar Erro: Agendamento ID={id} não encontrado ou não pertence ao cliente ID={clienteId}.");
@@ -194,7 +194,7 @@ namespace AgendaTatiNails.Controllers
             if (erroPreEdicao != null) {
                  Console.WriteLine($"Editar Erro Pre-Validação: {erroPreEdicao}");
                  ModelState.AddModelError(string.Empty, erroPreEdicao);
-                 // Não retorna ainda, deixa o ModelState ser verificado
+             
             } else {
                  Console.WriteLine("Editar Info: Passou na validação de possibilidade de alteração.");
             }
@@ -352,5 +352,5 @@ namespace AgendaTatiNails.Controllers
              model.ServicosDisponiveis = new SelectList(_dataService.Servicos, "Id", "Nome", model.ServicoId);
         }
 
-    } // Fim da Classe
-} // Fim do Namespace
+    } 
+}

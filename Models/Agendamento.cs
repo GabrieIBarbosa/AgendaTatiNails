@@ -18,10 +18,10 @@ namespace AgendaTatiNails.Models
         [StringLength(50)] // Adicionado limite de tamanho
         public string Status { get; set; } = "Agendado"; // Valor padrão
 
-        // *** CORREÇÃO NULLABILITY: Adicionado '?' ***
+       
         public Cliente? Cliente { get; set; }
         public Profissional? Profissional { get; set; }
         public Servico? Servico { get; set; }
-        // ********************************************
+    
     }
 }

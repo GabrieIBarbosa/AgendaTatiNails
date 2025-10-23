@@ -42,7 +42,7 @@ namespace AgendaTatiNails.Controllers
             //    Se o método retornar null (não deveria), envia uma lista vazia.
             return View(agendamentosDoCliente ?? new List<Models.Agendamento>());
         }
-        // Funções CRUD (a serem implementadas)
+        // Funções CRUD 
 
         // GET: Servico/Detalhes/5
         public IActionResult Detalhes(int id)

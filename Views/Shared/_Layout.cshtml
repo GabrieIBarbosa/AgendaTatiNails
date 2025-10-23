@@ -20,7 +20,7 @@
     <header class="site-header">
         <div class="header-container">
 
-            @* --- CORREÇÃO: LINK DA LOGO CONDICIONAL --- *@
+           
             @if (User.Identity.IsAuthenticated && User.IsInRole("Profissional"))
             {
                 // Se for Admin (Profissional), renderiza a logo SEM link (não clicável)
@@ -35,14 +35,13 @@
                     <img src="~/images/logo.png" alt="Tatiana NailArt Logo" class="brand-logo" />
                 </a>
             }
-            @* --- FIM DA CORREÇÃO --- *@
 
 
             <button id="mobile-menu-toggle" class="mobile-menu-button" aria-label="Abrir menu" aria-expanded="false">
                 <img src="https://api.iconify.design/lucide-menu.svg" alt="Menu" />
             </button>
 
-            @* --- Navegação Dinâmica (já correta) --- *@
+            @* --- Navegação Dinâmica  --- *@
             @if (User.Identity.IsAuthenticated && User.IsInRole("Profissional"))
             {
                 // NAV DO ADMIN

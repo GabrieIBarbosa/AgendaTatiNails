@@ -1,4 +1,4 @@
-// wwwroot/js/agendamento-page.js (Versão Completa com Verificação de Disponibilidade)
+// wwwroot/js/agendamento-page.js 
 document.addEventListener("DOMContentLoaded", () => {
     // --- Seletores de Elementos ---
     const stepCalendario = document.getElementById('step-calendario');

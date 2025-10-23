@@ -1,7 +1,7 @@
 ﻿// wwwroot/js/main.js
 document.addEventListener("DOMContentLoaded", () => {
 
-    // --- [NOVO] Lógica do Menu Mobile ---
+    // --- Lógica do Menu Mobile ---
     const mobileMenuButton = document.getElementById('mobile-menu-toggle');
     const mainNavigation = document.getElementById('main-navigation');
 

@@ -25,7 +25,7 @@ namespace AgendaTatiNails.Models.ViewModels
         [Display(Name = "Horário")]
         public string Hora { get; set; } // Vem do select de hora
 
-        // --- CORREÇÃO: Propriedades ignoradas na validação do POST ---
+      
         [BindNever] // Impede que o ASP.NET Core tente validar esta propriedade no POST
         public SelectList? ServicosDisponiveis { get; set; } // Tornada nulável '?'
 
@@ -34,6 +34,6 @@ namespace AgendaTatiNails.Models.ViewModels
 
         [BindNever] // Impede que o ASP.NET Core tente validar esta propriedade no POST
         public string? Status { get; set; } // Tornada nulável '?'
-        // --- FIM DA CORREÇÃO ---
+    
     }
 }

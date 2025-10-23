@@ -67,7 +67,7 @@
                                 @(item.Cliente?.Nome ?? "N/A")
                             </td>
                             <td>
-                                @item.DataHora.ToString("dd/MM/yyyy 'às' HH:mm") @* Ajustado para mostrar data completa *@
+                                @item.DataHora.ToString("dd/MM/yyyy 'às' HH:mm") 
                             </td>
                             <td>
                                 @(item.Servico?.Nome ?? "N/A")
@@ -109,6 +109,3 @@
     }
 </div>
 
-@section Scripts {
-    @* REMOVIDO o script do FullCalendar *@
-}

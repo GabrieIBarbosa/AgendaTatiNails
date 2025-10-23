@@ -169,7 +169,7 @@ namespace AgendaTatiNails.Controllers
             // 5. Enviar dados para a View
             ViewBag.FaturamentoTotal = faturamentoTotal;
             ViewBag.TotalServicosConcluidos = totalServicosConcluidos;
-            ViewBag.FaturamentoPorServico = faturamentoPorServico; // Envia a lista de breakdown
+            ViewBag.FaturamentoPorServico = faturamentoPorServico; 
 
             // Passa a lista detalhada de agendamentos concluídos como Model
             return View(agendamentosConcluidos.OrderByDescending(a => a.DataHora)); 

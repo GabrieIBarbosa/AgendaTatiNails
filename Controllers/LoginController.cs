@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using AgendaTatiNails.ViewModels; // Garanta que este namespace está correto
+using AgendaTatiNails.ViewModels; 
 using AgendaTatiNails.Models;
 using AgendaTatiNails.Repositories;
 using System.Linq;
@@ -9,7 +9,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System;
-using Microsoft.AspNetCore.Authorization; // Necessário para [AllowAnonymous]
+using Microsoft.AspNetCore.Authorization; 
 
 namespace AgendaTatiNails.Controllers
 {
@@ -205,7 +205,7 @@ namespace AgendaTatiNails.Controllers
                 authProperties);
         }
 
-        // *** MÉTODO ATUALIZADO (Etapa 1) ***
+
         // Redireciona com base na Role se não houver URL de retorno
         private IActionResult RedirectToLocal(string returnUrl, string role)
         {
@@ -215,7 +215,7 @@ namespace AgendaTatiNails.Controllers
             {
                 return Redirect(returnUrl);
             }
-            
+
             // Se NÃO havia URL de retorno (veio direto para /Login):
             if (role == "Profissional")
             {
