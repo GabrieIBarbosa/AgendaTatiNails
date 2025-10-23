@@ -1,0 +1,46 @@
+@model AgendaTatiNails.ViewModels.LoginViewModel
+@{
+    ViewData["Title"] = "Login";
+    Layout = "_Layout";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/Login/auth.css" asp-append-version="true" />
+}
+
+<div class="auth-container">
+    <div class="auth-card">
+        
+        <h1 class="auth-title">Login</h1>
+        <p class="auth-subtitle">Acesse sua conta para agendar seus serviços.</p>
+
+        <div asp-validation-summary="ModelOnly" class="text-danger auth-message"></div>
+
+        <form asp-action="Index" method="post">
+            @* Adicionado AntiForgeryToken que faltava no seu HTML original *@
+            @Html.AntiForgeryToken() 
+            
+            <div class="form-group">
+                <label asp-for="Email"></label>
+                <input asp-for="Email" class="form-control" placeholder="seuemail@exemplo.com" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Senha"></label>
+                <input asp-for="Senha" class="form-control" placeholder="Sua senha" />
+                <span asp-validation-for="Senha" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary btn-full-width">Entrar</button>
+            </div>
+        </form>
+        
+        <div class="auth-links">
+            <a asp-action="EsqueciSenha" asp-controller="Login">Esqueci minha senha</a>
+            <a asp-action="Cadastro" asp-controller="Login">Não tem uma conta? Cadastre-se</a>
+        </div>
+
+    </div>
+</div>

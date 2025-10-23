@@ -1,0 +1,68 @@
+﻿@{
+    ViewData["Title"] = "Agende seus serviços em minutos";
+}
+
+@section Styles {
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Montserrat:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="~/css/Home/home.css" asp-append-version="true" />
+}
+
+<section id="topo" class="hero">
+    <div class="hero-content">
+        <h1>Agende seus serviços em minutos</h1>
+        <p>Escolha um serviço, selecione dia e horário, faça login e confirme. Simples, rápido e sem complicação.</p>
+        <div class="hero-actions">
+            <a href="#servicos" class="btn-primary">Ver serviços</a>
+            <a href="#como-funciona" class="btn-secondary">Como funciona</a>
+        </div>
+    </div>
+    <img src="~/Images/Agenda.png" alt="Agenda digital sobre mesa" class="hero-image" />
+</section>
+
+<section id="servicos" class="services">
+    <h2>Serviços disponíveis</h2>
+    <ul class="services-grid">
+        <li class="service-card" data-id="1" data-name="Mão" data-price="45">
+            <img src="~/Images/Imagem_Mao.jpg" alt="Manicure mãos" />
+            <div class="service-card-content">
+                <h3>Mão <span>R$45</span></h3>
+                <p>Manicure completa. Duração: 40min.</p>
+                <button class="btn-primary btn-book" data-service-id="1">Agendar</button>
+            </div>
+        </li>
+        <li class="service-card" data-id="2" data-name="Pé" data-price="55">
+            <img src="~/Images/Imagem_Pe.jpg" alt="Pedicure pés" />
+            <div class="service-card-content">
+                <h3>Pé <span>R$55</span></h3>
+                <p>Pedicure completo. Duração: 45min.</p>
+                <button class="btn-primary btn-book" data-service-id="2">Agendar</button>
+            </div>
+        </li>
+        <li class="service-card" data-id="3" data-name="Pé e Mão" data-price="95">
+            <img src="~/Images/Imagem_Pe_e_Mao.jpg" alt="Combo Pé e Mão" />
+            <div class="service-card-content">
+                <h3>Pé e Mão <span>R$95</span></h3>
+                <p>Combo manicure e pedicure. Duração: 1h20.</p>
+                <button class="btn-primary btn-book" data-service-id="3">Agendar</button>
+            </div>
+        </li>
+    </ul>
+</section>
+
+<section id="como-funciona" class="steps">
+    <h2>Como funciona</h2>
+    <ol>
+        <li>1. Faça login ou cadastre-se</li>
+        <li>2. Escolha o serviço desejado</li>
+        <li>3. Selecione o dia e horário</li>
+        <li>4. Confirme seu agendamento</li>
+    </ol>
+</section>
+
+<section id="contato" class="contact">
+    <p>Dúvidas? Fale com a gente: <a href="tel:17987654321">(17) 9876-54321</a></p>
+    <a href="/Agendamento" id="btnComecarAgora" class="btn btn-primary">Começar agora</a>
+</section>

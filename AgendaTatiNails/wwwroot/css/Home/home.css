@@ -1,0 +1,217 @@
+/* =======================
+   wwwroot/css/home.css
+   ESTILOS ESPECÍFICOS DA PÁGINA INICIAL
+======================= */
+
+/* --- Hero Section --- */
+.hero {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 3rem;
+    padding: 6rem 2rem;
+    background-color: var(--color-bg-hero); 
+    max-width: 1200px;
+    margin: 0 auto;
+    border-radius: 0 0 1.5rem 1.5rem;
+    margin-bottom: 4rem;
+}
+
+.hero-content {
+    max-width: 550px;
+}
+
+.hero h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--color-text-dark);
+    margin-bottom: 1.5rem;
+    line-height: 1.2;
+    font-family: var(--fonte-titulo);
+}
+
+.hero p {
+    font-size: 1.125rem;
+    margin-bottom: 2.5rem;
+    color: var(--color-text-medium);
+    font-family: var(--fonte-corpo);
+    line-height: 1.6;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.hero-image {
+    max-width: 450px;
+    width: 100%;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+}
+
+/* --- Services Section --- */
+.services {
+    padding: 4rem 2rem;
+    text-align: center;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.services h2 {
+    font-size: 2.25rem;
+    font-weight: 700;
+    margin-bottom: 2.5rem;
+    color: var(--color-text-dark);
+    font-family: var(--fonte-titulo);
+}
+
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    list-style: none; 
+    padding: 0; 
+    margin: 0; 
+}
+
+.service-card {
+    background-color: #ffffff; 
+    border-radius: 1rem;
+    transition: transform 0.3s, box-shadow 0.3s;
+    text-align: left;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.service-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+}
+
+.service-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.service-card-content {
+    padding: 1.5rem;
+}
+
+.service-card h3 {
+    font-size: 1.375rem;
+    margin-bottom: 0.75rem;
+    color: var(--color-text-dark);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--fonte-titulo);
+}
+
+.service-card h3 span { /* Preço */
+    color: var(--color-primary);
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.service-card p {
+    margin-bottom: 1.5rem;
+    color: var(--color-text-medium);
+    font-family: var(--fonte-corpo);
+    line-height: 1.5;
+}
+
+.service-card .btn-book { /* Botão agendar dentro do card */
+    width: 100%;
+    justify-content: center;
+    
+}
+
+/* --- Steps Section ("Como Funciona") --- */
+.steps {
+    padding: 5rem 2rem;
+    background-color: var(--color-bg-hero); 
+    text-align: center;
+    margin-top: 4rem;
+}
+
+.steps h2 {
+    font-size: 2.25rem;
+    font-weight: 700;
+    margin-bottom: 3rem;
+    color: var(--color-text-dark);
+    font-family: var(--fonte-titulo);
+}
+
+.steps ol {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2rem;
+    list-style: none;
+    padding-left: 0;
+    max-width: 1000px;
+    margin: 0 auto;
+    counter-reset: steps-counter; 
+}
+
+.steps li {
+    background-color: #fff;
+    border-radius: 1rem;
+    padding: 2rem;
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: var(--color-text-dark);
+    flex: 1;
+    min-width: 220px;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    font-family: var(--fonte-titulo);
+    counter-increment: steps-counter; 
+}
+
+.steps li::before { /* O número do passo */
+    content: counter(steps-counter);
+    display: block;
+    width: 3rem;
+    height: 3rem;
+    line-height: 3rem;
+    border-radius: 50%;
+    background-color: var(--color-primary);
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.25rem;
+    margin: 0 auto 1.5rem auto;
+}
+
+/* --- Contact Section --- */
+.contact {
+    padding: 5rem 2rem;
+    text-align: center;
+    background-color: var(--color-text-dark);
+    color: #fff;
+    margin-top: 4rem;
+    border-radius: 1.5rem 1.5rem 0 0;
+}
+
+.contact p {
+    font-size: 1.25rem;
+    margin-bottom: 1.5rem;
+    color: #e5e7eb;
+    font-family: var(--fonte-corpo);
+}
+
+.contact p a {
+    color: #fff;
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: var(--color-primary);
+    text-decoration-thickness: 2px;
+}
+
+.contact .btn-primary { /* Botão "Começar agora" */
+    margin-top: 1rem;
+}

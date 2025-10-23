@@ -1,0 +1,98 @@
+/* =======================================================
+   wwwroot/css/responsive.css
+   ESTILOS PARA TELAS PEQUENAS (MOBILE)
+========================================================== */
+
+/* Define o breakpoint onde o menu mobile será ativado */
+@media (max-width: 992px) { /* Ajuste este valor se necessário */
+
+    /* --- Esconde a Navegação Principal --- */
+    .main-nav {
+        display: none; /* Esconde os links no desktop */
+
+        /* Estilo do Menu Mobile (quando aberto) */
+        position: absolute;
+        top: 100%; /* Logo abaixo do header */
+        left: 0;
+        right: 0;
+        background-color: #fff;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        z-index: 99;
+        flex-direction: column; /* Links empilhados */
+        padding: 1rem 0;
+        border-top: 1px solid #eee;
+    }
+
+    /* Regra para MOSTRAR o menu mobile quando o JS adicionar a classe */
+    .main-nav.mobile-menu-open {
+        display: flex;
+    }
+
+    /* Estilo dos Links no Menu Mobile */
+    .main-nav a.nav-link-item {
+        padding: 0.8rem 1.5rem; /* Padding interno */
+        text-align: center;
+        border-bottom: 1px solid #f5f5f5; /* Linha divisória sutil */
+    }
+    .main-nav a.nav-link-item:last-child {
+        border-bottom: none; /* Remove borda do último item */
+    }
+
+    /* --- Mostra o Botão Hambúrguer --- */
+    .mobile-menu-button {
+        display: block; /* Torna visível */
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0.5rem;
+        margin-left: auto; /* Empurra para a direita, antes da área do usuário */
+        margin-right: 1rem; /* Espaço antes da área do usuário */
+    }
+    .mobile-menu-button img {
+        width: 28px;
+        height: 28px;
+        display: block;
+         /* Cor escura para o ícone */
+        filter: brightness(0.1) contrast(1);
+    }
+
+    /* --- Ajustes Gerais no Header --- */
+    .header-container {
+        /* Garante que o container ocupe a largura */
+        padding: 0 1rem; /* Padding lateral menor */
+    }
+
+    .brand-logo {
+        height: 35px; /* Logo um pouco menor */
+    }
+
+    /* Esconder texto do botão "Agendar agora", deixar só o ícone? (Opcional) */
+    /*
+    #btnAgendar span { display: none; }
+    #btnAgendar img { margin-right: 0; }
+    #btnAgendar { padding: 0.6rem; }
+    */
+
+    /* Ajuste fino no espaçamento da área do usuário */
+    .user-auth-area {
+        gap: 0.8rem; /* Espaçamento menor */
+    }
+
+} /* Fim do @media */
+
+/* --- Esconder Botão Hambúrguer em Telas Maiores --- */
+@media (min-width: 993px) { /* 1px acima do breakpoint */
+    .mobile-menu-button {
+        display: none;
+    }
+    /* Garante que a nav principal seja flex (horizontal) em telas grandes */
+    .main-nav {
+         display: flex;
+         position: static; /* Remove posicionamento absoluto */
+         flex-direction: row; /* Volta a ser horizontal */
+         background: none;
+         box-shadow: none;
+         padding: 0;
+         border-top: none;
+    }
+}

@@ -1,0 +1,62 @@
+@model AgendaTatiNails.Models.Agendamento
+
+@{
+    ViewData["Title"] = "Detalhes do Agendamento";
+}
+
+@section Styles {
+    @* Reutiliza CSS de lista de serviços para o card e badge *@
+    <link rel="stylesheet" href="~/css/Servico/lista-servicos.css" asp-append-version="true" />
+    <style>
+        /* Ajustes específicos para a página de detalhes */
+        .details-container { max-width: 700px; }
+        .details-list dt { font-weight: 600; color: var(--color-text-medium); margin-bottom: 0.25rem;}
+        .details-list dd { margin-left: 0; margin-bottom: 1.25rem; font-size: 1.1rem; color: var(--color-text-dark); }
+        .details-actions { border-top: 1px solid #eee; padding-top: 1.5rem; margin-top: 1rem; display: flex; gap: 1rem; }
+    </style>
+}
+
+<div class="container lista-servicos-container details-container"> @* Reutiliza container *@
+
+    <div class="lista-servicos-header"> @* Reutiliza header *@
+        <h1>@ViewData["Title"]</h1>
+        <div>
+             @* Botão Voltar para a lista *@
+             <a asp-action="ListaServico" asp-controller="Servico" class="btn btn-secondary">← Voltar para Lista</a>
+        </div>
+    </div>
+
+    <div class="details-list">
+        <dl> @* Usando dl/dt/dd para lista de definições *@
+            <dt>@Html.DisplayNameFor(model => model.Servico.Nome)</dt>
+            <dd>@(Model.Servico?.Nome ?? "N/A")</dd>
+
+            <dt>@Html.DisplayNameFor(model => model.DataHora)</dt>
+            <dd>@Model.DataHora.ToString("dd/MM/yyyy 'às' HH:mm")</dd>
+
+            <dt>@Html.DisplayNameFor(model => model.Status)</dt>
+            <dd><span class="badge status-@(Model.Status?.ToLower() ?? "desconhecido")">@Html.DisplayFor(model => model.Status)</span></dd>
+
+            <dt>@Html.DisplayNameFor(model => model.Servico.Preco)</dt>
+            <dd>@Model.Servico?.Preco.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("pt-BR"))</dd>
+
+            <dt>Duração Estimada</dt>
+            <dd>@Model.Servico?.DuracaoEmMinutos minutos</dd>
+
+            @* Poderia adicionar Cliente e Profissional se fosse relevante para o cliente ver *@
+            @*
+            <dt>@Html.DisplayNameFor(model => model.Cliente.Nome)</dt>
+            <dd>@Model.Cliente?.Nome</dd>
+            <dt>@Html.DisplayNameFor(model => model.Profissional.Nome)</dt>
+            <dd>@Model.Profissional?.Nome</dd>
+            *@
+        </dl>
+    </div>
+
+    <div class="details-actions">
+         @* Links para Editar e Excluir (se aplicável) *@
+        <a asp-action="Editar" asp-route-id="@Model.Id" class="btn btn-warning">Editar</a>
+        <a asp-action="Excluir" asp-route-id="@Model.Id" class="btn btn-danger">Cancelar Agendamento</a>
+    </div>
+
+</div>

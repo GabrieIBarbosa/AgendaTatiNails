@@ -1,0 +1,36 @@
+@model AgendaTatiNails.ViewModels.EsqueciSenhaViewModel
+@{
+    ViewData["Title"] = "Recuperar Senha";
+    Layout = "_Layout";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/Login/auth.css" asp-append-version="true" />
+}
+
+<div class="auth-container">
+    <div class="auth-card">
+        <h1 class="auth-title">Recuperar Senha</h1>
+        <p class="auth-subtitle">Insira seu email de cadastro abaixo.</p>
+
+        <div asp-validation-summary="ModelOnly" class="text-danger auth-message"></div>
+
+        <form asp-action="EsqueciSenha" method="post">
+            @Html.AntiForgeryToken()
+            
+            <div class="form-group">
+                <label asp-for="Email"></label>
+                <input asp-for="Email" class="form-control" placeholder="seuemail@exemplo.com" autofocus />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary btn-full-width">Enviar Link de Recuperação</button>
+            </div>
+        </form>
+        
+        <div class="auth-links">
+            <a asp-action="Index" class="btn-secondary">Voltar para o Login</a>
+        </div>
+    </div>
+</div>

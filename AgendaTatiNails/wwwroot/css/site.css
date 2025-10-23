@@ -1,0 +1,84 @@
+/* =======================
+   wwwroot/css/site.css
+   RESET, PALETA E BOTÕES GERAIS
+======================= */
+
+/* --- Paleta de Cores --- */
+:root {
+    --color-primary: #880E4F; /* Rosa Escuro */
+    --color-secondary: #4A148C; /* Roxo */
+    --color-text-dark: #111827;
+    --color-text-medium: #374151;
+    --color-bg-light: #f9fafb;
+    --color-bg-hero: #FFF0F5; /* Rosa claro/fundo do Hero */
+    --color-accent-blue: #3b82f6; /* Azul para links específicos se necessário */
+    --fonte-titulo: 'Montserrat', sans-serif; /* Adicionado para consistência */
+    --fonte-corpo: 'Lato', sans-serif;       /* Adicionado para consistência */
+}
+
+/* --- Reset e Estilos Gerais --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--fonte-corpo); 
+    line-height: 1.6;
+    background-color: var(--color-bg-light);
+    color: var(--color-text-dark);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+button {
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+/* --- Botões Genéricos --- */
+.btn-primary, .btn-secondary {
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    font-family: var(--fonte-titulo); 
+    white-space: nowrap; 
+}
+
+.btn-primary {
+    background-color: var(--color-primary);
+    color: white;
+    border: 1px solid var(--color-primary);
+}
+
+.btn-primary:hover {
+    background-color: #A50E60;
+    border-color: #A50E60;
+    transform: translateY(-2px); 
+    box-shadow: 0 4px 10px rgba(136, 14, 79, 0.2); 
+}
+
+.btn-secondary {
+    background-color: transparent;
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
+}
+
+.btn-secondary:hover {
+    background-color: var(--color-primary);
+    color: white;
+    transform: translateY(-2px); 
+}

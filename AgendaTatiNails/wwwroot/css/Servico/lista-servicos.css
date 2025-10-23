@@ -1,0 +1,122 @@
+/* =======================================================
+   wwwroot/css/Servico/lista-servicos.css
+   ESTILOS REFINADOS PARA "MEUS AGENDAMENTOS"
+========================================================== */
+
+/* Container principal (estilo de card) */
+.lista-servicos-container {
+    max-width: 900px; /* Largura ajustada */
+    margin: 4rem auto; /* Centraliza com margem */
+    padding: 2.5rem 3rem; /* Padding interno */
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    border-top: 5px solid var(--color-primary); /* Borda rosa no topo */
+}
+
+/* Cabeçalho da página (Título + Botão) */
+.lista-servicos-header { /* Substitui .d-flex.justify-content-between */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 2rem;
+}
+
+.lista-servicos-header h1 {
+    font-family: 'Poppins', sans-serif;
+    color: var(--color-text-dark);
+    font-size: 1.8rem; /* Tamanho ajustado */
+    margin-bottom: 0;
+}
+
+.lista-servicos-header .btn-primary {
+    /* Estilo já vem do site.css */
+}
+
+/* Tabela de Agendamentos */
+.table-responsive {
+    margin-top: 1rem;
+}
+
+.table {
+    margin-bottom: 0;
+    border-collapse: separate; /* Permite border-radius nas células */
+    border-spacing: 0; /* Remove espaço entre células */
+    width: 100%; /* Garante largura total */
+}
+
+.table thead th {
+    background-color: var(--color-secondary) !important; /* Roxo */
+    color: white !important;
+    border: none !important; /* Remove bordas padrão */
+    font-weight: 600;
+    font-family: var(--fonte-titulo);
+    padding: 0.8rem 1rem;
+    text-align: left; /* Garante alinhamento */
+}
+/* Arredonda cantos do cabeçalho */
+.table thead th:first-child { border-top-left-radius: 8px; }
+.table thead th:last-child { border-top-right-radius: 8px; }
+
+.table tbody tr {
+     transition: background-color 0.15s ease;
+}
+
+.table tbody tr:hover {
+    background-color: #fdf2f8; /* Rosa bem clarinho */
+}
+
+.table tbody td {
+    padding: 0.8rem 1rem;
+    vertical-align: middle; /* Alinha conteúdo verticalmente */
+    border-bottom: 1px solid #eee; /* Linha sutil entre rows */
+    color: var(--color-text-medium);
+}
+.table tbody tr:last-child td {
+    border-bottom: none; /* Remove borda da última linha */
+}
+
+/* Badge de Status */
+.badge {
+    padding: 0.4em 0.8em;
+    font-size: 0.8rem; /* Levemente menor */
+    font-weight: 700; /* Mais forte */
+    border-radius: 15px; /* Formato de pílula */
+    text-transform: capitalize; /* Primeira letra maiúscula */
+}
+
+.status-agendado { background-color: #E0F2FE; color: #0C4A6E; }
+.status-concluído, .status-concluido { background-color: #D1FAE5; color: #065F46; }
+.status-cancelado { background-color: #FEE2E2; color: #B91C1C; }
+.status-desconhecido { background-color: #E5E7EB; color: #4B5563; } /* Cor para status não mapeado */
+
+/* Botões de Ação na Tabela */
+.table .btn-sm {
+    padding: 0.25rem 0.6rem;
+    font-size: 0.8rem;
+    margin-right: 5px;
+    border-radius: 6px; /* Bordas arredondadas */
+}
+.table .btn-sm:last-child { margin-right: 0; }
+
+/* Mensagem de "Nenhum agendamento" */
+.no-appointments {
+    color: var(--color-text-medium);
+    padding: 3rem 0; /* Adiciona espaçamento */
+}
+
+.no-appointments-icon {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 1.5rem;
+    opacity: 0.4;
+    filter: invert(13%) sepia(85%) saturate(2250%) hue-rotate(264deg) brightness(92%) contrast(100%); /* Cor roxa */
+}
+
+.no-appointments .lead {
+    font-weight: 600;
+    font-size: 1.2rem;
+    color: var(--color-text-dark);
+}

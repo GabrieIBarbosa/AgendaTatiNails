@@ -1,0 +1,225 @@
+/* =======================================================
+   wwwroot/css/layout.css
+   ESTRUTURA DO CABEÇALHO, RODAPÉ E DROPDOWN
+========================================================== */
+
+/* --- Estrutura Sticky Footer --- */
+.site-wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main[role="main"] {
+    flex-grow: 1;
+}
+
+/* --- Cabeçalho e Container Principal --- */
+.site-header {
+    background-color: #fff;
+    padding: 0.8rem 0; /* Padding vertical ajustado */
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-container {
+    margin: 0 auto;
+    padding: 0 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* --- Marca/Logo --- */
+.brand-link {
+    display: flex;
+    align-items: center;
+    /* Removidos gap, font-weight, font-size, white-space, color */
+    text-decoration: none; /* Garante que o link da imagem não seja sublinhado */
+}
+
+/* 1. REMOVIDA a classe .brand-icon */
+/* .brand-icon { width: 24px; height: 24px; } */
+
+/* 2. REMOVIDA a classe .brand-name */
+/* .brand-name { font-family: 'Poppins', sans-serif; } */
+
+/* 3. ADICIONADA a classe .brand-logo */
+.brand-logo {
+    height: 40px; /* <<-- AJUSTE A ALTURA DA SUA LOGO AQUI */
+    width: auto;
+    display: block;
+}
+
+
+/* --- Navegação Principal --- */
+.main-nav {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+}
+
+.main-nav a {
+    text-decoration: none;
+    color: var(--color-text-medium);
+    font-weight: 500;
+    transition: color 0.2s;
+    white-space: nowrap;
+}
+
+.main-nav a:hover {
+    color: var(--color-primary);
+}
+
+/* --- Área de Ações e Usuário --- */
+.user-auth-area {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    position: relative;
+    line-height: 1.1;
+}
+
+/* --- Botão "Agendar agora" --- */
+#btnAgendar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    padding: 0.6rem 1.2rem;
+    height: auto;
+    /* Estilo primário vem do site.css */
+}
+
+#btnAgendar img {
+    filter: brightness(0) invert(1);
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+}
+
+/* --- Lógica de Autenticação/Dropdown --- */
+/* Mantido o seu CSS original para .login-btn-design etc. */
+.login-btn-design {
+    background-color: var(--color-text-dark);
+    color: #fff;
+    padding: 8px 20px;
+    border-radius: 50px;
+    font-weight: 600;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s;
+}
+
+.icon-in-btn {
+    width: 20px;
+    height: 20px;
+    filter: invert(1);
+}
+
+.icon-btn { /* Usado pelo botão de perfil */
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    line-height: 0;
+}
+
+.icon-style { /* Usado pelo botão de perfil */
+    width: 24px;
+    height: 24px;
+    vertical-align: middle;
+    filter: brightness(0.1) contrast(1);
+}
+
+.user-profile-btn {
+    width: 38px;
+    height: 38px;
+    padding: 8px;
+    border-radius: 50%;
+    background-color: #e5e7eb;
+}
+
+.user-dropdown-container {
+    position: relative;
+}
+
+.user-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    z-index: 1000;
+    background-color: #fff;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    padding: 0.5rem 0;
+    min-width: 220px;
+    list-style: none;
+    margin: 0;
+    text-align: left;
+    opacity: 0;
+    transform: translateY(-10px);
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.user-dropdown-menu:not(.hidden) {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.dropdown-header {
+    padding: 0.75rem 1.5rem;
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid #f3f4f6;
+    color: var(--color-text-medium);
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.dropdown-header span { /* O nome do usuário */
+    color: var(--color-text-dark);
+    font-weight: 700;
+    font-size: 1rem;
+    display: block;
+}
+
+.dropdown-item { /* A tag <a> ou <button> dentro do <li> */
+    /* Estilos comuns para links e botões dentro do dropdown */
+    text-decoration: none;
+    color: var(--color-text-medium);
+    font-weight: 600;
+    display: block; /* Importante */
+    padding: 0.75rem 1.5rem;
+    transition: background-color 0.15s, color 0.15s;
+    font-size: 1rem;
+    /* Reset para o botão de logout */
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    font-family: inherit; /* Garante a mesma fonte */
+}
+
+.dropdown-item:hover {
+    background-color: #f9f0f5;
+    color: var(--color-primary);
+}
+
+/* --- Rodapé --- */
+footer {
+    padding: 2rem;
+    text-align: center;
+    background-color: var(--color-text-dark);
+    color: #fff;
+    font-size: 0.875rem;
+    margin-top: auto;
+}

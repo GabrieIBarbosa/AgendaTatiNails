@@ -1,0 +1,78 @@
+@* Views/Agendamento/Index.cshtml - Atualizado com containers de mensagem *@
+@{
+    ViewData["Title"] = "Seu Agendamento";
+}
+
+@section Styles {
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Montserrat:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="~/css/Agendamento/agendamento-page.css" asp-append-version="true" />
+}
+
+<div class="agendamento-container" data-is-authenticated="@User.Identity.IsAuthenticated.ToString().ToLower()">
+    <a href="/" class="btn-back">← Voltar para Serviços</a>
+    <h1 class="page-title">Agendamento de Serviço</h1>
+
+    @* Passo 1: Calendário *@
+    <section id="step-calendario" class="agendamento-step active">
+        <h2>1. Escolha o Serviço e a Data</h2>
+        
+        <div class="form-group-service">
+            <label for="service-select">Serviço Selecionado:</label>
+            <select id="service-select" class="full-width-input">
+                <option value="">Carregando serviços...</option>
+            </select>
+        </div>
+
+        <div class="calendar-wrapper">
+            <input type="date" id="calendar-date" min="@DateTime.Today.ToString("yyyy-MM-dd")" class="full-width-input" />
+        </div>
+
+        @* NOVO: Container de Mensagem para a Etapa 1 *@
+        <p id="step-1-message" class="step-message-container"></p>
+
+        <div class="step-actions">
+            <button class="btn-primary" id="btnProximoHorarios">Próximo: Ver Horários</button>
+        </div>
+    </section>
+
+    @* Passo 2: Horários *@
+    <section id="step-horarios" class="agendamento-step">
+        <h2>2. Escolha o Horário</h2>
+        <div class="horarios-grid" id="horariosGrid">
+        </div>
+
+        @* NOVO: Container de Mensagem para a Etapa 2 *@
+        <p id="step-2-message" class="step-message-container"></p>
+
+        <div class="step-actions">
+            <button class="btn-secondary" id="btnVoltarCalendario">Voltar</button>
+            <button class="btn-primary" id="btnProximoConfirmacao">Próximo: Confirmar</button>
+        </div>
+    </section>
+
+    @* Passo 3: Confirmação *@
+    <section id="step-confirmacao" class="agendamento-step">
+        <h2>3. Confirme seu Agendamento</h2>
+        <div class="confirmation-summary">
+            <p>Serviço: <span class="confirm-service"></span></p>
+            <p>Data: <span class="confirm-date"></span></p>
+            <p>Hora: <span class="confirm-time"></span></p>
+            <p>Preço: <span class="confirm-price"></span></p>
+        </div>
+
+        @* NOVO: Container de Mensagem para a Etapa 3 *@
+        <p id="step-3-message" class="step-message-container"></p>
+
+        <div class="step-actions">
+            <button class="btn-secondary" id="btnVoltarHorarios">Voltar</button>
+            <button class="btn-primary" id="btnConfirmarAgendamento">Confirmar Agendamento</button>
+        </div>
+    </section>
+</div>
+
+@section Scripts {
+    <script src="~/js/agendamento-page.js" asp-append-version="true"></script>
+}

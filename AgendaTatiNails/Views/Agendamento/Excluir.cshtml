@@ -1,0 +1,44 @@
+@model AgendaTatiNails.Models.Agendamento
+
+@{
+    ViewData["Title"] = "Cancelar Agendamento";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/Agendamento/crud-page.css" asp-append-version="true" />
+    <style>
+        .crud-card { border-top-color: #dc3545; }
+    </style>
+}
+
+<div class="crud-container">
+    <div class="crud-card">
+
+        <h1 class="crud-title">@ViewData["Title"]</h1>
+        <p class="crud-subtitle" style="color: #dc3545;">Tem certeza que deseja cancelar este agendamento?</p>
+
+        <div class="confirmation-details">
+            <dl>
+                <dt>Serviço:</dt>
+                <dd>@(Model.Servico?.Nome ?? "N/A")</dd>
+
+                <dt>Data e Hora:</dt>
+                <dd>@Model.DataHora.ToString("dd/MM/yyyy 'às' HH:mm")</dd>
+
+                <dt>Status Atual:</dt>
+                <dd>@Model.Status</dd>
+            </dl>
+        </div>
+
+        <form asp-action="ExcluirConfirmado" method="post">
+             @Html.AntiForgeryToken()
+             <input type="hidden" asp-for="Id" />
+
+             <div class="crud-actions">
+                 <button type="submit" class="btn btn-danger">Sim, Cancelar Agendamento</button>
+                 <a asp-action="ListaServico" asp-controller="Servico" class="btn btn-secondary">Não, Voltar</a>
+             </div>
+        </form>
+
+    </div>
+</div>

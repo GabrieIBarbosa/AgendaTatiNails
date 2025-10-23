@@ -1,0 +1,26 @@
+@model AgendaTatiNails.ViewModels.ConfirmacaoEnvioViewModel
+@{
+    ViewData["Title"] = "Verifique seu Email";
+    Layout = "_Layout";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/Login/auth.css" asp-append-version="true" />
+}
+
+<div class="auth-container">
+    <div class="auth-card">
+        <h1 class="auth-title">Instruções Enviadas!</h1>
+        
+        <p class="confirmation-text">
+            Se uma conta com o email <strong>@Model.Email</strong> existir, um link para redefinição de senha foi enviado.
+        </p>
+        <p class="confirmation-text" style="font-size: 0.9rem; margin-top: -1rem;">
+            (Por favor, verifique sua caixa de entrada e pasta de spam)
+        </p>
+
+        <div class="form-group" style="margin-top: 2rem;">
+            <a asp-action="Index" class="btn btn-primary btn-full-width">Voltar para o Login</a>
+        </div>
+    </div>
+</div>

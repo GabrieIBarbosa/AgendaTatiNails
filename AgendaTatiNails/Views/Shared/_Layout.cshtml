@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — Tatiana NailArt</title>
+
+    <link rel="icon" href="~/images/logo.png" type="image/png" />
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet" />
+    <link href="https://api.iconify.design/lucide-icons.css" rel="stylesheet" />
+
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/layout.css" asp-append-version="true" />
+     @* REFERÊNCIA AO NOVO CSS DE RESPONSIVIDADE *@
+    <link rel="stylesheet" href="~/css/responsive.css" asp-append-version="true" />
+
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body class="site-wrapper">
+    <header class="site-header">
+        <div class="header-container">
+            <a asp-controller="Home" asp-action="Index" class="brand-link">
+                <img src="~/images/logo.png" alt="Tatiana NailArt Logo" class="brand-logo" />
+            </a>
+
+            @* BOTÃO HAMBÚRGUER (Visível apenas em mobile) *@
+            <button id="mobile-menu-toggle" class="mobile-menu-button" aria-label="Abrir menu" aria-expanded="false">
+                <img src="https://api.iconify.design/lucide-menu.svg" alt="Menu" />
+            </button>
+
+            @* NAVEGAÇÃO PRINCIPAL (ID Adicionado) *@
+            <nav class="nav main-nav" id="main-navigation">
+                <a asp-controller="Home" asp-action="Index" asp-fragment="servicos" class="nav-link-item">Serviços</a>
+                <a asp-controller="Home" asp-action="Index" asp-fragment="como-funciona" class="nav-link-item">Como funciona</a>
+                <a asp-controller="Home" asp-action="Index" asp-fragment="contato" class="nav-link-item">Contato</a>
+            </nav>
+
+            <div class="user-auth-area">
+                <button id="btnAgendar" class="btn-primary">
+                    <img src="https://api.iconify.design/lucide-sparkles.svg" alt="Ícone" />
+                    Agendar agora
+                </button>
+
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <div class="user-dropdown-container">
+                        <button id="user-menu-button" class="icon-btn user-profile-btn" aria-expanded="false" aria-controls="user-dropdown-menu">
+                             <img src="https://api.iconify.design/lucide-user.svg" alt="Menu do Usuário" class="icon-style" />
+                        </button>
+                        <ul id="user-dropdown-menu" class="user-dropdown-menu hidden">
+                            <li class="dropdown-header"><span>Olá, @User.Identity.Name!</span></li>
+                            <li><a asp-controller="Servico" asp-action="ListaServico" class="dropdown-item">Meus serviços</a></li>
+                            <li>
+                                <form asp-controller="Login" asp-action="Logout" method="post" id="logoutForm" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="dropdown-item" style="border:none; background:none; width:100%; text-align: left; padding: 0.75rem 1.5rem; cursor: pointer;">Sair</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                }
+                else
+                {
+                    <a class="btn login-btn-design" asp-controller="Login" asp-action="Index">
+                        <img src="https://api.iconify.design/lucide-user.svg" alt="Ícone de Usuário" class="icon-in-btn" />
+                        Entrar
+                    </a>
+                }
+            </div>
+        </div>
+    </header>
+
+    <main role="main">
+        @RenderBody()
+    </main>
+
+    <footer>
+        <span>© @DateTime.Now.Year Tatiana NailArt — Todos os direitos reservados.</span>
+    </footer>
+
+    <script src="~/js/main.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
