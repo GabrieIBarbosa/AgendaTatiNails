@@ -1,6 +1,6 @@
 //Gerencia os serviços disponíveis no sistema. Exibe listas e detalhes de cada serviço para o agendamento.
 using AgendaTatiNails.Models;
-using AgendaTatiNails.Services;
+using AgendaTatiNails.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;

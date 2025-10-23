@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
-using AgendaTatiNails.Services; // Importe seu novo serviço
+using AgendaTatiNails.Repositories; // Importe seu novo serviço
 
 var builder = WebApplication.CreateBuilder(args);
 

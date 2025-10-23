@@ -5,58 +5,79 @@
 }
 
 @section Styles {
-    @* Reutiliza CSS de lista de serviços para o card e badge *@
-    <link rel="stylesheet" href="~/css/Servico/lista-servicos.css" asp-append-version="true" />
+    @* REMOVIDO: lista-servicos.css *@
+    @* ADICIONADO: crud-page.css *@
+    <link rel="stylesheet" href="~/css/Agendamento/crud-page.css" asp-append-version="true" />
+    @* ADICIONADO: admin.css (para os badges de status) *@
+    <link rel="stylesheet" href="~/css/Admin/admin.css" asp-append-version="true" />
+
     <style>
-        /* Ajustes específicos para a página de detalhes */
-        .details-container { max-width: 700px; }
-        .details-list dt { font-weight: 600; color: var(--color-text-medium); margin-bottom: 0.25rem;}
-        .details-list dd { margin-left: 0; margin-bottom: 1.25rem; font-size: 1.1rem; color: var(--color-text-dark); }
-        .details-actions { border-top: 1px solid #eee; padding-top: 1.5rem; margin-top: 1rem; display: flex; gap: 1rem; }
+        /* Ajuste específico para os links de ação (Editar/Cancelar) */
+        .details-actions {
+             margin-top: 2rem;
+             border-top: 1px solid #eee;
+             padding-top: 1.5rem;
+             display: flex;
+             gap: 1rem;
+        }
     </style>
 }
 
-<div class="container lista-servicos-container details-container"> @* Reutiliza container *@
+<div class="crud-container">
+    <div class="crud-card">
 
-    <div class="lista-servicos-header"> @* Reutiliza header *@
-        <h1>@ViewData["Title"]</h1>
-        <div>
-             @* Botão Voltar para a lista *@
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+             <h1 class="crud-title" style="text-align: left; margin: 0;">@ViewData["Title"]</h1>
              <a asp-action="ListaServico" asp-controller="Servico" class="btn btn-secondary">← Voltar para Lista</a>
         </div>
+        
+        <div class="confirmation-details">
+            <dl>
+                <dt>@Html.DisplayNameFor(model => model.Servico.Nome)</dt>
+                <dd>@(Model.Servico?.Nome ?? "N/A")</dd>
+
+                <dt>@Html.DisplayNameFor(model => model.DataHora)</dt>
+                <dd>@Model.DataHora.ToString("dd/MM/yyyy 'às' HH:mm")</dd>
+
+                <dt>@Html.DisplayNameFor(model => model.Status)</dt>
+                <dd><span class="badge status-@(Model.Status?.ToLower() ?? "desconhecido")">@Html.DisplayFor(model => model.Status)</span></dd>
+
+                <dt>@Html.DisplayNameFor(model => model.Servico.Preco)</dt>
+                <dd>@(Model.Servico?.Preco.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("pt-BR")) ?? "N/A")</dd>
+
+                <dt>Duração Estimada</dt>
+                <dd>@(Model.Servico?.DuracaoEmMinutos.ToString() ?? "N/A") minutos</dd>
+            </dl>
+        </div>
+
+        <div class="details-actions">
+            @* Redireciona para o AgendamentoController *@
+            <a asp-controller="Agendamento" asp-action="Editar" asp-route-id="@Model.Id" class="btn btn-warning">Editar</a>
+            <a asp-controller="Agendamento" asp-action="Excluir" asp-route-id="@Model.Id" class="btn btn-danger">Cancelar Agendamento</a>
+        </div>
+
     </div>
-
-    <div class="details-list">
-        <dl> @* Usando dl/dt/dd para lista de definições *@
-            <dt>@Html.DisplayNameFor(model => model.Servico.Nome)</dt>
-            <dd>@(Model.Servico?.Nome ?? "N/A")</dd>
-
-            <dt>@Html.DisplayNameFor(model => model.DataHora)</dt>
-            <dd>@Model.DataHora.ToString("dd/MM/yyyy 'às' HH:mm")</dd>
-
-            <dt>@Html.DisplayNameFor(model => model.Status)</dt>
-            <dd><span class="badge status-@(Model.Status?.ToLower() ?? "desconhecido")">@Html.DisplayFor(model => model.Status)</span></dd>
-
-            <dt>@Html.DisplayNameFor(model => model.Servico.Preco)</dt>
-            <dd>@Model.Servico?.Preco.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("pt-BR"))</dd>
-
-            <dt>Duração Estimada</dt>
-            <dd>@Model.Servico?.DuracaoEmMinutos minutos</dd>
-
-            @* Poderia adicionar Cliente e Profissional se fosse relevante para o cliente ver *@
-            @*
-            <dt>@Html.DisplayNameFor(model => model.Cliente.Nome)</dt>
-            <dd>@Model.Cliente?.Nome</dd>
-            <dt>@Html.DisplayNameFor(model => model.Profissional.Nome)</dt>
-            <dd>@Model.Profissional?.Nome</dd>
-            *@
-        </dl>
-    </div>
-
-    <div class="details-actions">
-         @* Links para Editar e Excluir (se aplicável) *@
-        <a asp-action="Editar" asp-route-id="@Model.Id" class="btn btn-warning">Editar</a>
-        <a asp-action="Excluir" asp-route-id="@Model.Id" class="btn btn-danger">Cancelar Agendamento</a>
-    </div>
-
 </div>
+
+@* Adiciona CSS para btn-warning se não estiver em site.css *@
+@section Scripts {
+    <style>
+        .btn-warning {
+             color: #000;
+             background-color: #ffc107;
+             border-color: #ffc107;
+             /* Herda padding, border-radius, etc... */
+             padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 600;
+             text-decoration: none; display: inline-flex; align-items: center;
+             justify-content: center; transition: all 0.2s;
+             font-family: var(--fonte-titulo); white-space: nowrap;
+             border: 1px solid transparent;
+        }
+         .btn-warning:hover {
+             color: #000;
+             background-color: #ffca2c;
+             border-color: #ffc720;
+             transform: translateY(-2px);
+         }
+    </style>
+}

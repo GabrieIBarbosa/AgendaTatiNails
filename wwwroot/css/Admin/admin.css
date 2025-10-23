@@ -1,0 +1,324 @@
+/* =======================================================
+   wwwroot/css/Admin/admin.css
+   Estilos principais para o Painel de Administração
+========================================================== */
+
+/* --- Container Principal (Estilo Card Roxo) --- */
+.admin-container {
+    max-width: 1200px;
+    margin: 3rem auto;
+    padding: 2.5rem;
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    /* Borda Roxo (do --color-secondary) */
+    border-top: 5px solid var(--color-secondary); 
+}
+
+/* --- Cabeçalho da Página (Título + Badge) --- */
+.admin-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 2rem;
+}
+
+.admin-header h1 {
+    font-family: 'Poppins', sans-serif;
+    color: var(--color-text-dark);
+    font-size: 1.8rem;
+    margin: 0;
+}
+
+.welcome-badge {
+    padding: 0.6rem 1rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 8px;
+    background-color: var(--color-secondary);
+    color: white;
+}
+
+.admin-subtitle {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.5rem;
+    color: var(--color-text-medium);
+    margin-top: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+/* --- Tabela de Agendamentos (Estilo Meus Agendamentos) --- */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: separate; /* Permite border-radius */
+    border-spacing: 0;
+    font-size: 0.95rem;
+}
+
+.admin-table thead th {
+    /* CORRIGIDO: Cabeçalho Roxo */
+    background-color: var(--color-secondary) !important; 
+    color: white !important;
+    border: none !important;
+    font-weight: 600;
+    font-family: var(--fonte-titulo);
+    padding: 0.8rem 1rem;
+    text-align: left;
+    white-space: nowrap;
+}
+.admin-table thead th:first-child { border-top-left-radius: 8px; }
+.admin-table thead th:last-child { border-top-right-radius: 8px; }
+
+.admin-table tbody tr {
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.15s ease;
+}
+.admin-table tbody tr:last-child { border-bottom: none; }
+.admin-table tbody tr:hover { background-color: #f9f0f5; }
+
+.admin-table td {
+    padding: 0.8rem 1rem;
+    vertical-align: middle;
+    color: var(--color-text-dark);
+    white-space: nowrap;
+}
+
+.admin-table td.client-name {
+    font-weight: 600;
+    color: var(--color-secondary); /* Roxo */
+}
+
+/* --- Badges de Status (Copiado de lista-servicos.css) --- */
+.badge {
+    padding: 0.4em 0.8em;
+    font-size: 0.8rem;
+    font-weight: 700;
+    border-radius: 15px;
+    text-transform: capitalize;
+}
+.status-agendado { background-color: #E0F2FE; color: #0C4A6E; }
+.status-concluído, .status-concluido { background-color: #D1FAE5; color: #065F46; }
+.status-cancelado { background-color: #FEE2E2; color: #B91C1C; }
+.status-desconhecido { background-color: #E5E7EB; color: #4B5563; }
+
+
+/* --- Botões de Ação da Tabela --- */
+.admin-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.admin-actions .btn-sm {
+    padding: 0.25rem 0.6rem;
+    font-size: 0.8rem;
+    margin: 0;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-block;
+    font-weight: 600;
+    text-align: center;
+    vertical-align: middle;
+    border: 1px solid transparent;
+}
+
+
+/* --- Mensagem de "Nenhum Agendamento" --- */
+.no-appointments {
+    color: var(--color-text-medium);
+    padding: 3rem 0;
+    text-align: center;
+}
+.no-appointments-icon {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 1.5rem;
+    opacity: 0.4;
+    filter: invert(13%) sepia(85%) saturate(2250%) hue-rotate(264deg) brightness(92%) contrast(100%);
+}
+.no-appointments .lead {
+    font-weight: 600;
+    font-size: 1.2rem;
+    color: var(--color-text-dark);
+}
+
+
+/* Botão Verde (Novo) */
+.btn-success {
+    color: #fff;
+    background-color: #198754;
+    border-color: #198754;
+}
+.btn-success:hover { background-color: #157347; border-color: #146c43; }
+
+/* Botão Vermelho (Novo) */
+.btn-danger {
+    color: #fff;
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+.btn-danger:hover { background-color: #bb2d3b; border-color: #b02a37; }
+
+/* =======================================================
+   ESTILOS ADICIONAIS PARA O DASHBOARD (Admin/Index)
+========================================================== */
+
+/* Grid para os cards de estatística */
+.stat-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Colunas responsivas */
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+}
+
+/* Card de estatística individual */
+.stat-card {
+    background-color: #fdfdff; /* Quase branco */
+    border: 1px solid #eee;
+    border-radius: 10px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.06);
+}
+
+/* Ícone do card (ex: calendário, cifrão) */
+.stat-card-icon {
+    flex-shrink: 0; /* Impede que o ícone encolha */
+    padding: 1rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.stat-card-icon img {
+    width: 28px;
+    height: 28px;
+    filter: invert(1); /* Deixa o ícone branco */
+}
+/* Cor 1: Roxo */
+.stat-card-icon.icon-bg-purple {
+    background-color: var(--color-secondary);
+}
+/* Cor 2: Rosa */
+.stat-card-icon.icon-bg-pink {
+    background-color: var(--color-primary);
+}
+/* Cor 3: Verde (para financeiro) */
+.stat-card-icon.icon-bg-green {
+    background-color: #198754;
+}
+
+/* Texto do card */
+.stat-card-info .stat-card-value {
+    font-family: 'Poppins', sans-serif;
+    font-size: 2.25rem;
+    font-weight: 600;
+    color: var(--color-text-dark);
+    line-height: 1;
+}
+.stat-card-info .stat-card-label {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--color-text-medium);
+}
+
+/* --- Estilos para o Formulário de Busca (Admin/Agendamentos) --- */
+.admin-search-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: flex-end; /* Alinha o label, input e botão */
+    padding: 1.5rem;
+    background-color: #f9fafb; /* Fundo cinza claro */
+    border-radius: 8px;
+    margin-bottom: 2.5rem;
+}
+.admin-search-form .form-group {
+    flex-grow: 1; /* Faz o grupo do input crescer */
+    margin-bottom: 0;
+}
+/* Reutiliza estilo de label (se não tiver .form-group global) */
+.admin-search-form label {
+    display: block;
+    font-weight: 600;
+    color: var(--color-text-medium);
+    margin-bottom: 0.5rem;
+}
+.admin-search-form .form-control {
+    width: 100%;
+    max-width: 300px; /* Limita largura do input de data */
+    padding: 0.8rem 1rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-family: inherit; /* Garante a fonte correta */
+}
+.admin-search-form .btn-primary {
+     height: fit-content; /* Alinha altura com input */
+     padding: 0.8rem 1.5rem; /* Ajusta padding */
+}
+
+/* =======================================================
+   ESTILOS ADICIONAIS PARA A PÁGINA FINANCEIRO
+========================================================== */
+
+/* Lista de breakdown (Faturamento por Serviço) */
+.finance-breakdown-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 2.5rem 0;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    overflow: hidden; /* Para conter os cantos arredondados */
+}
+
+.finance-breakdown-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #f5f5f5;
+}
+.finance-breakdown-list li:last-child {
+    border-bottom: none;
+}
+/* Cor de fundo alternada */
+.finance-breakdown-list li:nth-child(odd) {
+     background-color: #fcfcfd; 
+}
+
+.breakdown-service-name {
+    font-weight: 600;
+    color: var(--color-text-dark);
+    font-size: 1.1rem;
+}
+/* (x Quantidade) */
+.breakdown-service-name span {
+    font-weight: 400;
+    color: var(--color-text-medium);
+    font-size: 0.9rem;
+    margin-left: 0.5rem;
+}
+
+/* Valor (R$) */
+.breakdown-service-total {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #15803d; /* Verde escuro */
+}

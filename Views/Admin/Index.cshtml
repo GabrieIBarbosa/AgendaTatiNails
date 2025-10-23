@@ -1,0 +1,139 @@
+@model IEnumerable<AgendaTatiNails.Models.Agendamento>
+@using System.Globalization
+
+@{
+    ViewData["Title"] = "Dashboard";
+    
+    // --- DADOS VÊM DO VIEWLAG (CALCULADOS NO CONTROLLER) ---
+    var countHoje = (int)(ViewBag.CountHoje ?? 0);
+    var countProximos7Dias = (int)(ViewBag.CountProximos7Dias ?? 0);
+    var faturamentoHoje = (decimal)(ViewBag.FaturamentoHoje ?? 0m);
+    
+    // O Model (agendamentosDeHoje) já vem filtrado do Controller
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/Admin/admin.css" asp-append-version="true" />
+}
+
+<div class="admin-container">
+    <div class="admin-header">
+        <h1>@ViewData["Title"]</h1>
+        <span class="welcome-badge">
+            Bem-vinda, @User.Identity.Name!
+        </span>
+    </div>
+
+    @* Bloco de Alertas (Mantido) *@
+    @if (TempData["MensagemSucesso"] != null) { /* ... Alerta Sucesso ... */ }
+    @if (TempData["MensagemErro"] != null) { /* ... Alerta Erro ... */ }
+
+    <h2 class="admin-subtitle" style="margin-top: 1rem;">Resumo Rápido</h2>
+    <div class="stat-card-grid">
+        
+        <div class="stat-card">
+            <div class="stat-card-icon icon-bg-purple">
+                <img src="https://api.iconify.design/lucide-calendar-check.svg" alt="" />
+            </div>
+            <div class="stat-card-info">
+                <span class="stat-card-value">@countHoje</span>
+                <span class="stat-card-label">Agendamento(s) Hoje</span>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-card-icon icon-bg-pink">
+                <img src="https://api.iconify.design/lucide-calendar-clock.svg" alt="" />
+            </div>
+            <div class="stat-card-info">
+                <span class="stat-card-value">@countProximos7Dias</span>
+                <span class="stat-card-label">Próximos 7 Dias</span>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-card-icon icon-bg-green">
+                <img src="https://api.iconify.design/lucide-dollar-sign.svg" alt="" />
+            </div>
+            <div class="stat-card-info">
+                <span class="stat-card-value">@faturamentoHoje.ToString("C", new CultureInfo("pt-BR"))</span>
+                <span class="stat-card-label">Faturado Hoje (Concluídos)</span>
+            </div>
+        </div>
+    </div>
+    
+    <h2 class="admin-subtitle">
+        Agendamentos de Hoje (@DateTime.Today.ToString("dd/MM/yyyy"))
+    </h2>
+
+    @if (Model.Any()) @* O Model agora é agendamentosDeHoje *@
+    {
+        <div class="table-responsive">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Horário</th>
+                        <th>Serviço</th>
+                        <th>Status</th>
+                        <th style="min-width: 150px;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model) @* Loop direto no Model *@
+                    {
+                        <tr>
+                            <td class="client-name">@(item.Cliente?.Nome ?? "N/A")</td>
+                            <td>@item.DataHora.ToString("HH:mm")</td>
+                            <td>@(item.Servico?.Nome ?? "N/A")</td>
+                            <td><span class="badge status-@(item.Status?.ToLower() ?? "desc")">@item.Status</span></td>
+                            <td class="admin-actions">
+                                @if (item.Status == "Agendado")
+                                {
+                                    <form asp-action="MarcarConcluido" method="post" style="display: inline;">
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn-sm btn-success" title="Marcar como Concluído">Concluir</button>
+                                    </form>
+                                    <form asp-action="CancelarAdmin" method="post" style="display: inline;">
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn-sm btn-danger" title="Cancelar Agendamento">Cancelar</button>
+                                    </form>
+                                }
+                                else { <span>-</span> }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="text-center mt-5 no-appointments">
+            <img src="https://api.iconify.design/lucide-calendar-check-2.svg" alt="Calendário Vazio" class="no-appointments-icon" />
+            <p class="lead">Nenhum agendamento para hoje.</p>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    @* Adiciona estilos e script para os alertas (se ainda não estiverem no admin.css) *@
+    @if (TempData["MensagemSucesso"] != null || TempData["MensagemErro"] != null)
+    {
+        <style>
+            .alert { padding: 1rem; margin: 0 0 1rem 0; border: 1px solid transparent; border-radius: 8px; position: relative; }
+            .alert-success { color: #0f5132; background-color: #d1e7dd; border-color: #badbcc; }
+            .alert-danger { color: #842029; background-color: #f8d7da; border-color: #f5c2c7; }
+            .btn-close { position: absolute; top: 0.5rem; right: 0.5rem; padding: 0.5rem; background: transparent; border: none; cursor: pointer; font-size: 1.2rem; opacity: 0.7; }
+        </style>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                document.querySelectorAll('.alert .btn-close').forEach(button => {
+                    button.addEventListener('click', function() { this.closest('.alert').style.display = 'none'; });
+                });
+            });
+        </script>
+    }
+}

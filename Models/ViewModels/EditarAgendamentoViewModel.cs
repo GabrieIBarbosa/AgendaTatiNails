@@ -17,6 +17,7 @@ namespace AgendaTatiNails.Models.ViewModels
 
         [Required(ErrorMessage = "Selecione a data.")]
         [DataType(DataType.Date)]
+        [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
         [Display(Name = "Data")]
         public DateTime Data { get; set; } // Vem do input date
 

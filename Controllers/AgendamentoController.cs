@@ -9,7 +9,7 @@ using System.Security.Claims;
 using System.Threading.Tasks; // Mantido para async Task<IActionResult>
 using AgendaTatiNails.Models;
 using AgendaTatiNails.Models.ViewModels;
-using AgendaTatiNails.Services;
+using AgendaTatiNails.Repositories;
 
 namespace AgendaTatiNails.Controllers
 {

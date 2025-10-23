@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace AgendaTatiNails.Services
+namespace AgendaTatiNails.Repositories
 {
     public class InMemoryDataService
     {
@@ -39,12 +39,7 @@ namespace AgendaTatiNails.Services
 
         private static void CarregarDadosIniciais()
         {
-             if (!_clientes.Any()) {
-                _clientes.AddRange(new List<Cliente> {
-                    new Cliente { Id = 1, Nome = "Ana Silva", Email = "ana@email.com", Senha = "123", Telefone = "11988887777" },
-                    new Cliente { Id = 2, Nome = "Beatriz Costa", Email = "bia@email.com", Senha = "123", Telefone = "11955554444" }
-                });
-            }
+           
              if (!_profissionais.Any()) {
                 _profissionais.AddRange(new List<Profissional> {
                     new Profissional { Id = 1, Nome = "Tati (Profissional)", Email = "tati@email.com", Senha = "admin123" }
@@ -57,14 +52,9 @@ namespace AgendaTatiNails.Services
                     new Servico { Id = 3, Nome = "Pé e Mão", Descricao = "Combo manicure e pedicure.", Preco = 95.00m, DuracaoEmMinutos = 80 }
                 });
             }
-             if (!_agendamentos.Any()) {
-                _agendamentos.AddRange(new List<Agendamento> {
-                    new Agendamento { Id = 1, ClienteId = 1, ProfissionalId = 1, ServicoId = 1, DataHora = DateTime.Now.AddDays(3).Date.AddHours(14), Status = "Agendado" },
-                    new Agendamento { Id = 2, ClienteId = 1, ProfissionalId = 1, ServicoId = 3, DataHora = DateTime.Now.AddDays(10).Date.AddHours(10), Status = "Agendado" },
-                    new Agendamento { Id = 3, ClienteId = 2, ProfissionalId = 1, ServicoId = 2, DataHora = DateTime.Now.AddDays(5).Date.AddHours(16), Status = "Agendado" }
-                });
-                _proximoAgendamentoId = _agendamentos.Max(a => a.Id) + 1; 
-            }
+            
+                _proximoAgendamentoId = 1; 
+            
         }
 
 
@@ -94,16 +84,37 @@ namespace AgendaTatiNails.Services
 
         public IEnumerable<Agendamento> ObterAgendamentosPorCliente(int clienteId)
         {
-            lock(_lockAgendamentos)
+            lock (_lockAgendamentos)
             {
                 return _agendamentos
                     .Where(a => a.ClienteId == clienteId)
-                    .Select(a => {
+                    .Select(a =>
+                    {
                         a.Servico = _servicos?.FirstOrDefault(s => s.Id == a.ServicoId);
                         return a;
                     })
                     .OrderBy(a => a.DataHora)
-                    .ToList(); 
+                    .ToList();
+            }
+        }
+        
+        // NOVO MÉTODO: Obter TODOS os agendamentos (para o Admin)
+        public IEnumerable<Agendamento> ObterTodosAgendamentosComClienteEServico()
+        {
+            lock(_lockAgendamentos)
+            {
+                // Pega todos os agendamentos
+                var todosAgendamentos = _agendamentos.ToList(); // Cria uma cópia da lista
+
+                // Preenche os dados de navegação para cada um
+                foreach(var agendamento in todosAgendamentos)
+                {
+                    // Usamos null-check '?' para segurança
+                    agendamento.Servico = _servicos?.FirstOrDefault(s => s.Id == agendamento.ServicoId);
+                    agendamento.Cliente = _clientes?.FirstOrDefault(c => c.Id == agendamento.ClienteId);
+                }
+                
+                return todosAgendamentos.OrderBy(a => a.DataHora);
             }
         }
 
@@ -128,8 +139,10 @@ namespace AgendaTatiNails.Services
 
                 agendamentoExistente.DataHora = agendamentoAtualizado.DataHora;
                 agendamentoExistente.ServicoId = agendamentoAtualizado.ServicoId;
-                // agendamentoExistente.Status = agendamentoAtualizado.Status;
-                Console.WriteLine($"[InMemory] Agendamento atualizado: ID={agendamentoExistente.Id}");
+                agendamentoExistente.Status = agendamentoAtualizado.Status; 
+          
+
+                Console.WriteLine($"[InMemory] Agendamento atualizado: ID={agendamentoExistente.Id}, Novo Status={agendamentoExistente.Status}");
                 return true;
             }
         }
