@@ -5,64 +5,70 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 using System.Security.Claims;
+using System.Collections.Generic; 
 
 namespace AgendaTatiNails.Controllers
 {
     [Authorize(Roles = "Cliente")] // Só permite acesso a usuários autenticados com o papel "Cliente"
     public class ServicoController : Controller
     {
-        private readonly InMemoryDataService _dataService;
+        private readonly IAgendaRepository _repository;
+
+        public ServicoController(IAgendaRepository repository)
+        {
+            _repository = repository;
+        }
 
         public IActionResult Index()
         {
             return View("~/Views/Servico/Index.cshtml");
         }
-        public ServicoController(InMemoryDataService dataService)
-        {
-            _dataService = dataService;
-        }
+
 
         // GET: /Servico/ListaServico
+        // (Esta é a página "Meus Agendamentos" do cliente)
         public IActionResult ListaServico()
         {
             // 1. Obter o ID do usuário logado
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (!int.TryParse(userIdString, out int clienteId))
             {
-                // Se não conseguir converter o ID, retorna não autorizado
-                // (Embora o [Authorize] deva prevenir isso)
                 return Unauthorized();
             }
 
-            // 2. Usar o método do serviço para buscar os agendamentos do cliente
-            //    Este método já faz o filtro E inclui os dados do serviço.
-            var agendamentosDoCliente = _dataService.ObterAgendamentosPorCliente(clienteId);
+            // Trocamos _dataService.ObterAgendamentosPorCliente por...
+            // ... _repository.ObterAtendimentosPorCliente
+            var atendimentosDoCliente = _repository.ObterAtendimentosPorCliente(clienteId);
 
-            // 3. Enviar a lista (que pode estar vazia) para a View
-            //    Se o método retornar null (não deveria), envia uma lista vazia.
-            return View(agendamentosDoCliente ?? new List<Models.Agendamento>());
+            // 3. Enviar a lista para a View
+
+            // TODO: A View "ListaServico.cshtml" precisa ser atualizada
+            // para receber um @model List<Atendimento>
+            return View(atendimentosDoCliente ?? new List<Models.Atendimento>());
+            // --- Fim da MUDANÇA 2 ---
         }
+        
         // Funções CRUD 
 
         // GET: Servico/Detalhes/5
         public IActionResult Detalhes(int id)
         {
-            // Lógica para buscar e exibir detalhes do agendamento 'id'
-            return Content($"Funcionalidade DETALHES para o agendamento {id} a ser implementada.");
+            // Redireciona para a ação correta no AgendamentoController
+            return RedirectToAction("Detalhes", "Agendamento", new { id = id });
         }
         
         // GET: Servico/Editar/5
         public IActionResult Editar(int id)
         {
-            // Lógica para buscar o agendamento 'id' e mostrar um formulário de edição
-            return Content($"Funcionalidade EDITAR para o agendamento {id} a ser implementada.");
+            // Redireciona para a ação correta no AgendamentoController
+            return RedirectToAction("Editar", "Agendamento", new { id = id });
         }
 
         // GET: Servico/Excluir/5
         public IActionResult Excluir(int id)
         {
-            // Lógica para buscar o agendamento 'id' e mostrar uma tela de confirmação de exclusão
-            return Content($"Funcionalidade EXCLUIR para o agendamento {id} a ser implementada.");
+            // Redireciona para a ação correta no AgendamentoController
+            return RedirectToAction("Excluir", "Agendamento", new { id = id });
         }
     }
 }

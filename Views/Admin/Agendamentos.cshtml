@@ -1,15 +1,12 @@
-@model IEnumerable<AgendaTatiNails.Models.Agendamento>
+@model IEnumerable<AgendaTatiNails.Models.Atendimento>
 
 @{
     ViewData["Title"] = "Ver Agendamentos";
-    // Pega a data que o Controller enviou (ou define hoje como padrão)
     string dataPesquisada = ViewBag.DataPesquisada ?? DateTime.Today.ToString("yyyy-MM-dd");
 }
 
 @section Styles {
     <link rel="stylesheet" href="~/css/Admin/admin.css" asp-append-version="true" />
-    @* REMOVIDO o link do FullCalendar *@
-    @* Adiciona CSS para o input de data nativo (reutilizado) *@
     <link rel="stylesheet" href="~/css/Agendamento/agendamento-page.css" asp-append-version="true" />
 }
 
@@ -17,19 +14,19 @@
     <div class="admin-header">
         <h1>@ViewData["Title"]</h1>
         @if (TempData["MensagemSucesso"] != null)
-    {
-        <div class="alert alert-success" role="alert" style="/* estilos de alerta */">
-            @TempData["MensagemSucesso"]
-            <button type="button" class="btn-close" onclick="this.parentElement.style.display='none'" aria-label="Close">×</button>
-        </div>
-    }
-    @if (TempData["MensagemErro"] != null)
-    {
-         <div class="alert alert-danger" role="alert" style="/* estilos de alerta */">
-            @TempData["MensagemErro"]
-            <button type="button" class="btn-close" onclick="this.parentElement.style.display='none'" aria-label="Close">×</button>
-        </div>
-    }
+        {
+            <div class="alert alert-success" role="alert">
+                @TempData["MensagemSucesso"]
+                <button type="button" class="btn-close" onclick="this.parentElement.style.display='none'" aria-label="Close">×</button>
+            </div>
+        }
+        @if (TempData["MensagemErro"] != null)
+        {
+             <div class="alert alert-danger" role="alert">
+                @TempData["MensagemErro"]
+                <button type="button" class="btn-close" onclick="this.parentElement.style.display='none'" aria-label="Close">×</button>
+            </div>
+        }
     </div>
 
     <form method="get" asp-action="Agendamentos" class="admin-search-form">
@@ -37,7 +34,7 @@
             <label for="dataPesquisa">Selecione o dia para buscar:</label>
             <input type="date" id="dataPesquisa" name="dataPesquisa" 
                    value="@dataPesquisada" 
-                   class="form-control full-width-input" /> @* Reusa estilo full-width-input *@
+                   class="form-control full-width-input" />
         </div>
         <button type="submit" class="btn btn-primary">Buscar</button>
     </form>
@@ -54,8 +51,7 @@
                     <tr>
                         <th>Cliente</th>
                         <th>Horário</th>
-                        <th>Serviço</th>
-                        <th>Status</th>
+                        <th>Serviço(s)</th> <th>Status</th>
                         <th style="min-width: 150px;">Ações</th>
                     </tr>
                 </thead>
@@ -64,34 +60,34 @@
                     {
                         <tr>
                             <td class="client-name">
-                                @(item.Cliente?.Nome ?? "N/A")
+                                @(item.Cliente?.Usuario?.UsuarioNome ?? "N/A")
                             </td>
                             <td>
-                                @item.DataHora.ToString("dd/MM/yyyy 'às' HH:mm") 
+                                @item.AtendDataAtend.ToString("dd/MM/yyyy 'às' HH:mm") 
                             </td>
                             <td>
-                                @(item.Servico?.Nome ?? "N/A")
+                                @(item.Servicos.Any() ? string.Join(", ", item.Servicos.Select(s => s.ServicoDesc)) : "N/A")
                             </td>
                             <td>
-                                <span class="badge status-@(item.Status?.ToLower() ?? "desc")">@item.Status</span>
+                                @Html.Raw(GetStatusBadge(item.AtendStatus))
                             </td>
                             <td class="admin-actions">
-                                @if (item.Status == "Agendado")
+                                @if (item.AtendStatus == 1) // 1 = Agendado
                                 {
                                     <form asp-action="MarcarConcluido" method="post" style="display: inline;">
-                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <input type="hidden" name="id" value="@item.AtendId" />
                                         @Html.AntiForgeryToken()
                                         <button type="submit" class="btn-sm btn-success" title="Marcar como Concluído">Concluir</button>
                                     </form>
                                     <form asp-action="CancelarAdmin" method="post" style="display: inline;">
-                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <input type="hidden" name="id" value="@item.AtendId" />
                                         @Html.AntiForgeryToken()
                                         <button type="submit" class="btn-sm btn-danger" title="Cancelar Agendamento">Cancelar</button>
                                     </form>
                                 }
                                 else
                                 {
-                                    <span>-</span> @* Mostra um traço se já foi Concluído/Cancelado *@
+                                    <span>-</span>
                                 }
                             </td>
                         </tr>
@@ -109,3 +105,15 @@
     }
 </div>
 
+@functions {
+    public string GetStatusBadge(int status)
+    {
+        return status switch
+        {
+            1 => "<span class=\"badge status-agendado\">Agendado</span>",
+            2 => "<span class=\"badge status-concluido\">Concluído</span>",
+            3 => "<span class=\"badge status-cancelado\">Cancelado</span>",
+            _ => "<span class=\"badge status-desc\">Desconhecido</span>"
+        };
+    }
+}

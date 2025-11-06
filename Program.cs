@@ -1,24 +1,23 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
-using AgendaTatiNails.Repositories; // Importe seu novo serviço
+using AgendaTatiNails.Repositories; 
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Adiciona serviços ao contêiner.
 builder.Services.AddControllersWithViews();
 
-// 2. REMOVA qualquer linha que tenha 'AddDbContext' (ex: builder.Services.AddDbContext<...>)
+// Adiciona a interface e a implementação do repositório SQL.
+// AddScoped = "Crie uma nova instância para cada requisição web"
+// Isso é ESSENCIAL para repositórios de banco de dados.
+builder.Services.AddScoped<IAgendaRepository, SqlAgendaRepository>();
 
-// 3. Adicione o seu serviço em memória como Singleton
-// Singleton = "Crie apenas uma instância e use-a sempre"
-builder.Services.AddSingleton<InMemoryDataService>();
 
-// 4. Adicione o serviço de autenticação por Cookies
-// Isso permite que o login (HttpContext.SignInAsync) funcione
+
+// Adicione o serviço de autenticação por Cookies
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.LoginPath = "/Login/Index"; // Página de login
-        options.LogoutPath = "/Login/Logout"; // Página de logout
+        options.LoginPath = "/Login/Index"; 
+        options.LogoutPath = "/Login/Logout"; 
         options.AccessDeniedPath = "/Home/AccessDenied";
     });
 
@@ -36,8 +35,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-// 5. ATIVE a autenticação e autorização
-// (Tem que estar entre UseRouting e MapControllerRoute)
+// ATIVA a autenticação e autorização
 app.UseAuthentication();
 app.UseAuthorization();
 

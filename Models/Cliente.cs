@@ -1,15 +1,12 @@
-using System.Collections.Generic;
-
 namespace AgendaTatiNails.Models
 {
+    // Mapeia a tabela Clientes e estende Usuario
     public class Cliente
     {
-        public int Id { get; set; }
-        public string Nome { get; set; }
-        public string Telefone { get; set; }
-        public string Email { get; set; }
-        public string Senha { get; set; } // Em um projeto real, seria SenhaHash
+        public int ClienteId { get; set; } // É a mesma ID do Usuario
+        public string ClienteTelefone { get; set; }
 
-        public virtual ICollection<Agendamento> Agendamentos { get; set; } = new List<Agendamento>();
+        // Propriedade de navegação (útil)
+        public Usuario Usuario { get; set; } 
     }
 }

@@ -1,4 +1,4 @@
-@model IEnumerable<AgendaTatiNails.Models.Agendamento>
+@model IEnumerable<AgendaTatiNails.Models.Atendimento>
 
 @{
     ViewData["Title"] = "Meus Agendamentos";
@@ -6,48 +6,33 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/css/Servico/lista-servicos.css" asp-append-version="true" />
-    @* Adicione estilos básicos para o alerta se não estiver usando Bootstrap *@
-    <style>
-        .alert {
-            padding: 1rem;
-            margin-bottom: 1rem;
-            border: 1px solid transparent;
-            border-radius: 0.25rem;
-            position: relative; /* Para o botão fechar */
-        }
-        .alert-success {
-            color: #0f5132;
-            background-color: #d1e7dd;
-            border-color: #badbcc;
-        }
-        .btn-close { /* Estilo básico para o botão 'X' */
-             box-sizing: content-box;
-             width: 1em; height: 1em;
-             padding: .25em .25em;
-             color: #000; background: transparent;
-             border: 0; border-radius: .25rem; opacity: .5;
-             position: absolute; top: .5rem; right: .5rem; z-index: 2;
-             cursor: pointer;
-        }
-         .fade { transition: opacity .15s linear; }
-         .show { opacity: 1; }
-         /* Script simples para fechar alerta (alternativa ao Bootstrap JS) */
-         /* document.querySelectorAll('.alert .btn-close').forEach(btn => btn.addEventListener('click', (e) => e.target.closest('.alert').style.display='none')); */
+    <link rel="stylesheet" href="~/css/Admin/admin.css" asp-append-version="true" /> <style>
+        /* Estilos de Alerta */
+        .alert { padding: 1rem; margin-bottom: 1rem; border: 1px solid transparent; border-radius: 0.25rem; position: relative; }
+        .alert-success { color: #0f5132; background-color: #d1e7dd; border-color: #badbcc; }
+        .btn-close { box-sizing: content-box; width: 1em; height: 1em; padding: .25em .25em; color: #000; background: transparent; border: 0; border-radius: .25rem; opacity: .5; position: absolute; top: .5rem; right: .5rem; z-index: 2; cursor: pointer; }
+        .fade { transition: opacity .15s linear; }
+        .show { opacity: 1; }
     </style>
 }
 
 <div class="container lista-servicos-container">
 
-    @* --- BLOCO PARA EXIBIR MENSAGEM TempData --- *@
     @if (TempData["MensagemSucesso"] != null)
     {
-        @* Usei classes simples que definimos no <style> acima *@
         <div class="alert alert-success show fade" role="alert">
             @TempData["MensagemSucesso"]
             <button type="button" class="btn-close" onclick="this.parentElement.style.display='none'" aria-label="Close"></button>
         </div>
     }
-    @* --- FIM DO BLOCO TempData --- *@
+    
+    @if (TempData["MensagemErro"] != null)
+    {
+         <div class="alert alert-danger show fade" role="alert">
+            @TempData["MensagemErro"]
+            <button type="button" class="btn-close" onclick="this.parentElement.style.display='none'" aria-label="Close"></button>
+        </div>
+    }
 
     <div class="lista-servicos-header">
         <h1>@ViewData["Title"]</h1>
@@ -64,23 +49,24 @@
             <table class="table table-striped table-hover">
                 <thead>
                     <tr>
-                        <th>@Html.DisplayNameFor(model => model.DataHora)</th>
-                        <th>Serviço</th>
-                        <th>Status</th>
+                        <th>Data e Hora</th> <th>Serviço(s)</th> <th>Status</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var item in Model.OrderBy(i => i.DataHora))
+                    @foreach (var item in Model.OrderBy(i => i.AtendDataAtend))
                     {
                         <tr>
-                            <td>@item.DataHora.ToString("dd/MM/yyyy 'às' HH:mm")</td>
-                            <td>@(item.Servico?.Nome ?? "N/A")</td>
-                            <td><span class="badge status-@(item.Status?.ToLower() ?? "desconhecido")">@Html.DisplayFor(modelItem => item.Status)</span></td>
+                            <td>@item.AtendDataAtend.ToString("dd/MM/yyyy 'às' HH:mm")</td>
+                            
+                            <td>@(item.Servicos.Any() ? string.Join(", ", item.Servicos.Select(s => s.ServicoDesc)) : "N/A")</td>
+                            
+                            <td>@Html.Raw(GetStatusBadge(item.AtendStatus))</td>
+                            
                             <td>
-                               <a asp-controller="Agendamento" asp-action="Detalhes" asp-route-id="@item.Id" class="btn btn-info btn-sm" title="Detalhes">Detalhes</a>
-                                <a asp-controller="Agendamento" asp-action="Editar" asp-route-id="@item.Id" class="btn btn-warning btn-sm" title="Editar">Editar</a>
-                                <a asp-controller="Agendamento" asp-action="Excluir" asp-route-id="@item.Id" class="btn btn-danger btn-sm" title="Excluir">Excluir</a>
+                                <a asp-controller="Agendamento" asp-action="Detalhes" asp-route-id="@item.AtendId" class="btn btn-info btn-sm" title="Detalhes">Detalhes</a>
+                                <a asp-controller="Agendamento" asp-action="Editar" asp-route-id="@item.AtendId" class="btn btn-warning btn-sm" title="Editar">Editar</a>
+                                <a asp-controller="Agendamento" asp-action="Excluir" asp-route-id="@item.AtendId" class="btn btn-danger btn-sm" title="Excluir">Excluir</a>
                             </td>
                         </tr>
                     }
@@ -98,22 +84,35 @@
     }
 </div>
 
-@* Adiciona script simples para fechar alerta (se não usar JS do Bootstrap) *@
+@functions {
+    public string GetStatusBadge(int status)
+    {
+        return status switch
+        {
+            1 => "<span class=\"badge status-agendado\">Agendado</span>",
+            2 => "<span class=\"badge status-concluido\">Concluído</span>",
+            3 => "<span class=\"badge status-cancelado\">Cancelado</span>",
+            _ => "<span class=\"badge status-desc\">Desconhecido</span>"
+        };
+    }
+}
+
 @section Scripts {
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Script para fechar alertas
             document.querySelectorAll('.alert .btn-close').forEach(button => {
                 button.addEventListener('click', function() {
                     this.closest('.alert').style.display = 'none';
                 });
             });
-             // Opcional: Fazer o alerta desaparecer sozinho depois de um tempo
-             setTimeout(function() {
-                 document.querySelectorAll('.alert.show').forEach(alert => {
-                     alert.style.opacity = '0';
-                     setTimeout(() => alert.style.display = 'none', 150); // Tempo da transição fade
-                 });
-             }, 5000); // 5 segundos
+            // Script para auto-fechar
+            setTimeout(function() {
+                document.querySelectorAll('.alert.show').forEach(alert => {
+                    alert.style.opacity = '0';
+                    setTimeout(() => alert.style.display = 'none', 150);
+                });
+            }, 5000); 
         });
     </script>
 }

@@ -6,135 +6,136 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks; // Mantido para async Task<IActionResult>
+using System.Threading.Tasks;
 using AgendaTatiNails.Models;
-using AgendaTatiNails.Models.ViewModels;
+using AgendaTatiNails.Models.ViewModels; 
 using AgendaTatiNails.Repositories;
 
 namespace AgendaTatiNails.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Cliente")] // Apenas Clientes podem agendar
     public class AgendamentoController : Controller
     {
-        private readonly InMemoryDataService _dataService;
-        private const int DuracaoSlotMinutos = 45;
+        // Trocamos InMemoryDataService por IAgendaRepository
+        private readonly IAgendaRepository _repository;
 
-        public AgendamentoController(InMemoryDataService dataService)
+        public AgendamentoController(IAgendaRepository repository)
         {
-            _dataService = dataService;
+            _repository = repository;
         }
+
 
         // =====================================================================
         // CRIAR AGENDAMENTO
         // =====================================================================
 
-        // GET: /Agendamento?serviceId=X
+        // GET: /Agendamento?serviceId=X (ou /Agendamento/Index)
         [HttpGet]
         public IActionResult Index(string serviceId)
         {
-            ViewBag.ServiceId = serviceId;
-            return View("~/Views/Agendamento/Index.cshtml");
+            // TODO: A View "Index.cshtml" precisa ser totalmente refeita
+            // para funcionar com a nova lógica (múltiplos serviços e slots de 'Horario')
+            
+            // Passamos a lista de serviços para a View (para os checkboxes)
+            var todosServicos = _repository.ObterTodosServicos();
+            
+            // Passa os serviços para a View
+            return View("~/Views/Agendamento/Index.cshtml", todosServicos);
         }
 
-        // GET: /Agendamento/GetHorariosDisponiveis?data=YYYY-MM-DD&servicoId=X[&agendamentoIdSendoEditado=Y]
+        // GET: /Agendamento/GetHorariosDisponiveis?data=YYYY-MM-DD&duracaoTotal=XX
         [HttpGet]
-        public IActionResult GetHorariosDisponiveis(string data, int servicoId, int? agendamentoIdSendoEditado = null)
+        public IActionResult GetHorariosDisponiveis(string data, int duracaoTotal) // <-- MUDANÇA AQUI
         {
-            // Validações de Input
             if (!DateTime.TryParseExact(data, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dataSelecionada))
                 return BadRequest(new { message = "Formato de data inválido." });
 
-            int duracaoServico = _dataService.ObterDuracaoServico(servicoId);
-            if (duracaoServico <= 0)
-                return BadRequest(new { message = "Serviço inválido." });
+            // Adicionamos uma validação para a duração
+            if (duracaoTotal <= 0)
+                return BadRequest(new { message = "Duração do serviço inválida." });
 
-            int slotsNecessarios = (int)Math.Ceiling((double)duracaoServico / DuracaoSlotMinutos);
+            if (dataSelecionada.Date < DateTime.Now.Date)
+                return Ok(new List<Horario>()); 
 
-            // Geração e Filtro Inicial de Horários
-            var horariosPotenciais = GerarHorariosPotenciais();
-            var agora = DateTime.Now;
-            if (dataSelecionada.Date == agora.Date) {
-                horariosPotenciais = agora.Hour >= 12
-                    ? new List<TimeSpan>()
-                    : horariosPotenciais.Where(h => h >= new TimeSpan(13, 30, 0)).ToList();
-            } else if (dataSelecionada.Date < agora.Date) {
-                 horariosPotenciais = new List<TimeSpan>();
-            }
-
-            // *** USA O MÉTODO CORRETO QUE RETORNA DICIONÁRIO ***
-            var slotsOcupados = _dataService.ObterSlotsOcupadosComIdAgendamento(dataSelecionada.Date);
-            // **************************************************
-
-            // Filtrar Disponíveis
-            var horariosDisponiveis = new List<string>();
-            var ultimoSlotManha = new TimeSpan(11, 45, 0);
-            var ultimoSlotTarde = new TimeSpan(17, 15, 0);
-
-            foreach (var horarioInicio in horariosPotenciais)
+            try
             {
-                DateTime dataHoraInicio = dataSelecionada.Date + horarioInicio;
-                if (slotsNecessarios > 1 && (horarioInicio == ultimoSlotManha || horarioInicio == ultimoSlotTarde))
-                    continue;
-
-                // *** USA O MÉTODO CORRETO QUE RECEBE DICIONÁRIO E ID ***
-                if (_dataService.VerificarDisponibilidadeSlot(dataHoraInicio, duracaoServico, slotsOcupados, agendamentoIdSendoEditado))
-
+                // Agora passamos a 'duracaoTotal' para o repositório
+                var horarios = _repository.ObterHorariosDisponiveis(dataSelecionada, duracaoTotal);
+                
+                var horariosFormatados = horarios.Select(h => new 
                 {
-                    horariosDisponiveis.Add(horarioInicio.ToString(@"hh\:mm"));
-                }
+                    horarioId = h.HorarioId,
+                    horario = h.HorarioPeriodo.ToString(@"hh\:mm")
+                });
+
+                return Ok(horariosFormatados); 
             }
-            return Ok(horariosDisponiveis);
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro ao buscar horários: {ex.Message}");
+                return StatusCode(500, new { message = "Erro ao buscar horários."});
+            }
         }
 
         // POST: /Agendamento/CriarAgendamento
         [HttpPost]
-        public IActionResult CriarAgendamento([FromBody] AgendamentoViewModel model)
+        public IActionResult CriarAgendamento([FromBody] CriarAtendimentoViewModel model)
         {
-             if (!ModelState.IsValid) return BadRequest(new { message = "Dados inválidos." });
-             if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out int clienteId)) return Unauthorized(/*...*/);
-             if (!int.TryParse(model.ServicoId, out int servicoId) || !DateTime.TryParseExact($"{model.Data} {model.Hora}", "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dataHoraAgendamento)) return BadRequest(/*...*/);
-             int duracaoServico = _dataService.ObterDuracaoServico(servicoId);
-             if (duracaoServico <= 0) return BadRequest(/*...*/);
-             string erroRegra = ValidarRegrasDeHorario(dataHoraAgendamento);
-             if (erroRegra != null) return BadRequest(new { message = erroRegra });
-
-            // *** USA O MÉTODO CORRETO QUE RETORNA DICIONÁRIO ***
-            var slotsOcupados = _dataService.ObterSlotsOcupadosComIdAgendamento(dataHoraAgendamento.Date);
-            // *** USA O MÉTODO CORRETO QUE RECEBE DICIONÁRIO ***
-            if (!_dataService.VerificarDisponibilidadeSlot(dataHoraAgendamento, duracaoServico, slotsOcupados)) // Sem ID a ignorar
-
-                return Conflict(new { message = "Desculpe, este horário foi agendado. Escolha outro." });
-
-            var novoAgendamento = new Agendamento
+            if (!ModelState.IsValid)
             {
-                ClienteId = clienteId,
-                ServicoId = servicoId,
-                DataHora = dataHoraAgendamento,
-                ProfissionalId = 1,
-                Status = "Agendado"
-            };
-
-            try {
-                _dataService.AdicionarAgendamento(novoAgendamento);
-                return Ok(new { message = "Agendamento confirmado!", redirectToUrl = Url.Action("ListaServico", "Servico") });
-            } catch (Exception ex) {
-                 Console.WriteLine($"Erro ao salvar agendamento: {ex.Message}");
-                 return StatusCode(500, new { message = "Erro interno ao salvar." });
+                return BadRequest(new { message = "Dados inválidos." });
             }
+
+            try
+            {
+                // Obtem o ID do Cliente logado
+                if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out int clienteId))
+                {
+                    return Unauthorized(new { message = "Sua sessão expirou." });
+                }
+
+                //Chama o novo método do repositório, o repositório cuida de toda a lógica de transação
+                Atendimento novoAtendimento = _repository.AdicionarAtendimento(clienteId, model.ServicoId, model.HorarioId);
+
+                
+                // (O JSON que o JS espera em caso de sucesso)
+                return Ok(new { message = "Agendamento confirmado!" });
+            }
+            catch (Exception ex)
+            {
+                // Procura erros (ex: Conflito de horário)
+                Console.WriteLine($"Erro ao CriarAgendamento: {ex.Message}");
+                
+                // Se o erro foi um conflito (pego pela lógica no repo)
+                if (ex.Message.StartsWith("Conflito"))
+                {
+                    return Conflict(new { message = "Desculpe, este horário foi ocupado. Por favor, escolha outro." });
+                }
+                
+                // Outro erro interno
+                return StatusCode(500, new { message = "Erro interno no servidor ao tentar salvar." });
+            }
+            
         }
 
         // =====================================================================
-        // DETALHES DO AGENDAMENTO
+        // DETALHES DO AGENDAMENTO (ATENDIMENTO)
         // =====================================================================
 
         // GET: /Agendamento/Detalhes/{id}
         [HttpGet]
         public IActionResult Detalhes(int id)
         {
-            var agendamento = _dataService.ObterAgendamentoPorId(id);
-            if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out int clienteId)) return Unauthorized();
-            if (agendamento == null || agendamento.ClienteId != clienteId) return NotFound();
-            return View(agendamento);
+            if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out int clienteId)) 
+                return Unauthorized();
+            
+            var atendimento = _repository.ObterAtendimentoPorId(id);
+
+            if (atendimento == null || atendimento.IdCliente != clienteId) 
+                return NotFound();
+            
+            return View(atendimento);
+
         }
 
         // =====================================================================
@@ -145,25 +146,52 @@ namespace AgendaTatiNails.Controllers
         [HttpGet]
         public IActionResult Editar(int id)
         {
-            var agendamento = _dataService.ObterAgendamentoPorId(id);
-            if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out int clienteId)) return Unauthorized();
-            if (agendamento == null || agendamento.ClienteId != clienteId) return NotFound();
+            if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out int clienteId)) 
+                return Unauthorized();
+            
+            // 1. Busca o Atendimento (e seus dados de Cliente/Serviços)
+            var atendimento = _repository.ObterAtendimentoPorId(id);
 
-            string erroPreEdicao = ValidarPossibilidadeDeAlteracao(agendamento);
-            if (erroPreEdicao != null) {
-                TempData["MensagemErro"] = erroPreEdicao;
+            if (atendimento == null || atendimento.IdCliente != clienteId) 
+                return NotFound();
+
+            // Validação de status (que adicionamos)
+            if (atendimento.AtendStatus != 1) // 1 = Agendado
+            {
+                string statusTexto = atendimento.AtendStatus == 2 ? "Concluído" : "Cancelado";
+                TempData["MensagemErro"] = $"Agendamentos com status '{statusTexto}' não podem ser editados.";
+                return RedirectToAction(nameof(ServicoController.ListaServico), "Servico");
+            }
+            
+            // 2. Busca o Horário atual deste atendimento
+            var horarioAtual = _repository.ObterHorarioPorAtendimentoId(atendimento.AtendId);
+            if (horarioAtual == null)
+            {
+                TempData["MensagemErro"] = "Erro: Não foi possível encontrar o slot de horário original.";
+                return RedirectToAction(nameof(ServicoController.ListaServico), "Servico");
+            }
+            
+            // 3. Pega o Serviço atual (assumindo um serviço por atendimento)
+            var servicoAtual = atendimento.Servicos.FirstOrDefault();
+            if (servicoAtual == null)
+            {
+                TempData["MensagemErro"] = "Erro: Não foi possível encontrar o serviço original.";
                 return RedirectToAction(nameof(ServicoController.ListaServico), "Servico");
             }
 
+            // 4. Monta o ViewModel
             var viewModel = new EditarAgendamentoViewModel
             {
-                Id = agendamento.Id,
-                ServicoId = agendamento.ServicoId,
-                Data = agendamento.DataHora.Date,
-                Hora = agendamento.DataHora.ToString("HH:mm"),
-                Status = agendamento.Status,
-                ServicosDisponiveis = new SelectList(_dataService.Servicos, "Id", "Nome", agendamento.ServicoId)
+                AtendimentoId = atendimento.AtendId,
+                HorarioId = horarioAtual.HorarioId, // Pré-seleciona o horário
+                ServicoId = servicoAtual.ServicoId, // Pré-seleciona o serviço
+                
+                // Dados para exibir na View
+                AtendimentoAtual = atendimento,
+                HorarioAtual = horarioAtual,
+                TodosOsServicos = new SelectList(_repository.ObterTodosServicos(), "ServicoId", "ServicoDesc", servicoAtual.ServicoId)
             };
+            
             return View(viewModel);
         }
 
@@ -172,103 +200,51 @@ namespace AgendaTatiNails.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Editar(int id, EditarAgendamentoViewModel model)
         {
-            Console.WriteLine($"POST Editar ID={id}. Recebido: Serv={model.ServicoId}, Data={model.Data}, Hora={model.Hora}"); // LOG 1
+            // Valida se o ID da URL é o mesmo do formulário
+            if (id != model.AtendimentoId) return NotFound();
 
-            if (id != model.Id) {
-                 Console.WriteLine("Editar Erro: ID da URL não confere com ID do modelo.");
-                 return NotFound();
-            }
-
-            var agendamentoOriginal = _dataService.ObterAgendamentoPorId(model.Id);
-            if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out int clienteId)) {
-                 Console.WriteLine("Editar Erro: Não foi possível obter ID do cliente.");
-                 return Unauthorized(); 
-            }
-            if (agendamentoOriginal == null || agendamentoOriginal.ClienteId != clienteId) {
-                Console.WriteLine($"Editar Erro: Agendamento ID={id} não encontrado ou não pertence ao cliente ID={clienteId}.");
-                return Forbid();
-            }
-
-            // Valida se ainda pode ser alterado ANTES de verificar o ModelState
-            string erroPreEdicao = ValidarPossibilidadeDeAlteracao(agendamentoOriginal);
-            if (erroPreEdicao != null) {
-                 Console.WriteLine($"Editar Erro Pre-Validação: {erroPreEdicao}");
-                 ModelState.AddModelError(string.Empty, erroPreEdicao);
-             
-            } else {
-                 Console.WriteLine("Editar Info: Passou na validação de possibilidade de alteração.");
-            }
-
-
-            if (ModelState.IsValid) // Verifica se o modelo básico E a regra acima passaram
+            // CORREÇÃO: Repopula todos os campos necessários se o ModelState for inválido
+            if (!ModelState.IsValid)
             {
-                 Console.WriteLine("Editar Info: ModelState é Válido. Prosseguindo com validações...");
-                // Conversão e Validação dos Novos Dados
-                if (!DateTime.TryParseExact($"{model.Data:yyyy-MM-dd} {model.Hora}", "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime novaDataHora)) {
-                     Console.WriteLine("Editar Erro: Falha ao converter Data/Hora.");
-                     ModelState.AddModelError("Hora", "Formato de data ou hora inválido.");
-                     RepopularViewModelParaEdicao(model); return View(model);
-                }
-                 Console.WriteLine($"Editar Info: Nova DataHora = {novaDataHora}");
+                var atendimento = _repository.ObterAtendimentoPorId(model.AtendimentoId);
+                var horarioAtual = _repository.ObterHorarioPorAtendimentoId(model.AtendimentoId);
+                var servicoAtual = atendimento?.Servicos.FirstOrDefault(); // Adicionado '?' por segurança
 
-                int novaDuracao = _dataService.ObterDuracaoServico(model.ServicoId);
-                if (novaDuracao <= 0) {
-                     Console.WriteLine($"Editar Erro: Serviço ID={model.ServicoId} inválido.");
-                     ModelState.AddModelError("ServicoId", "Serviço inválido.");
-                     RepopularViewModelParaEdicao(model); return View(model);
-                }
-
-                string? erroRegra = ValidarRegrasDeHorario(novaDataHora);
-                if (erroRegra != null) {
-                    Console.WriteLine($"Editar Erro Regra Horário: {erroRegra}");
-                    ModelState.AddModelError(string.Empty, erroRegra);
-                    RepopularViewModelParaEdicao(model); return View(model);
-                }
-
-                // Validação de Disponibilidade (Ignorando o Próprio Agendamento)
-                var slotsOcupadosNaData = _dataService.ObterSlotsOcupadosComIdAgendamento(novaDataHora.Date);
-                if (!_dataService.VerificarDisponibilidadeSlot(novaDataHora, novaDuracao, slotsOcupadosNaData, model.Id)) {
-                    Console.WriteLine("Editar Erro: Conflito de horário detectado.");
-                    ModelState.AddModelError(string.Empty, "O horário selecionado conflita com outro agendamento.");
-                    RepopularViewModelParaEdicao(model); return View(model);
-                }
-
-                // Atualização e Salvamento
-                agendamentoOriginal.ServicoId = model.ServicoId;
-                agendamentoOriginal.DataHora = novaDataHora;
-                 Console.WriteLine($"Editar Info: Atualizando Agendamento ID={id} para Serv={model.ServicoId}, DataHora={novaDataHora}");
-                try {
-                    bool sucesso = _dataService.AtualizarAgendamento(agendamentoOriginal);
-                     Console.WriteLine($"Editar Info: Resultado de AtualizarAgendamento = {sucesso}");
-                    if (sucesso) {
-                         Console.WriteLine("Editar Info: Atualização BEM SUCEDIDA. Redirecionando...");
-                         TempData["MensagemSucesso"] = "Agendamento atualizado!";
-                         return RedirectToAction(nameof(ServicoController.ListaServico), "Servico"); // Redireciona!
-                    } else {
-                         Console.WriteLine("Editar Erro: AtualizarAgendamento retornou false.");
-                         ModelState.AddModelError(string.Empty, "Não foi possível salvar as alterações (erro interno no serviço).");
-                    }
-                } catch (Exception ex) {
-                     Console.WriteLine($"ERRO FATAL ao atualizar agendamento ID {id}: {ex}");
-                     ModelState.AddModelError(string.Empty, "Erro interno ao salvar.");
-                }
+                model.AtendimentoAtual = atendimento;
+                model.HorarioAtual = horarioAtual;
+                model.TodosOsServicos = new SelectList(
+                    _repository.ObterTodosServicos(), 
+                    "ServicoId", "ServicoDesc", 
+                    servicoAtual?.ServicoId // Adicionado '?' por segurança
+                );
+                
+                return View(model); // Retorna à View com os erros de validação
             }
-            else 
+
+            try
             {
-                 Console.WriteLine("Editar Erro: ModelState INVÁLIDO.");
-                 foreach(var state in ModelState) {
-                     if (state.Value.Errors.Any()) {
-                          Console.WriteLine($"- Erro Campo '{state.Key}': {string.Join(", ", state.Value.Errors.Select(e => e.ErrorMessage))}");
-                     }
-                 }
-            }
+                if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out int clienteId))
+                    return Unauthorized();
 
-            // Se chegou aqui, houve erro (ModelState inválido ou falha ao salvar)
-            Console.WriteLine("Editar Info: Retornando para a View de Edição com erros.");
-            RepopularViewModelParaEdicao(model); 
-            return View(model);
+                // Chama o repositório com todos os novos dados
+                _repository.AtualizarAtendimento(
+                    model.AtendimentoId, 
+                    model.ServicoId, 
+                    model.HorarioId, 
+                    clienteId
+                );
+
+                TempData["MensagemSucesso"] = "Agendamento atualizado com sucesso!";
+                return RedirectToAction(nameof(ServicoController.ListaServico), "Servico");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro ao Editar (POST): {ex.Message}");
+                // CORREÇÃO: Envia o erro para a View via TempData
+                TempData["MensagemErro"] = $"Erro ao atualizar: {ex.Message}";
+                return RedirectToAction(nameof(Editar), new { id = model.AtendimentoId });
+            }
         }
-
         // =====================================================================
         // EXCLUIR/CANCELAR AGENDAMENTO
         // =====================================================================
@@ -277,80 +253,57 @@ namespace AgendaTatiNails.Controllers
         [HttpGet]
         public IActionResult Excluir(int id)
         {
-            var agendamento = _dataService.ObterAgendamentoPorId(id);
-             if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out int clienteId)) return Unauthorized();
-             if (agendamento == null || agendamento.ClienteId != clienteId) return NotFound();
+            if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out int clienteId)) 
+                return Unauthorized();
 
-            string erroPreExclusao = ValidarPossibilidadeDeAlteracao(agendamento);
-            if (erroPreExclusao != null) {
-                TempData["MensagemErro"] = erroPreExclusao;
+            var atendimento = _repository.ObterAtendimentoPorId(id);
+
+            if (atendimento == null || atendimento.IdCliente != clienteId) 
+                return NotFound();
+            
+            if (atendimento.AtendStatus != 1) // 1 = Agendado
+            {
+                string statusTexto = atendimento.AtendStatus == 2 ? "Concluído" : "Cancelado";
+                TempData["MensagemErro"] = $"Agendamentos com status '{statusTexto}' não podem ser cancelados.";
                 return RedirectToAction(nameof(ServicoController.ListaServico), "Servico");
             }
-            return View(agendamento);
+            return View(atendimento);
         }
 
         // POST: /Agendamento/ExcluirConfirmado/{id}
         [HttpPost, ActionName("ExcluirConfirmado")]
         [ValidateAntiForgeryToken]
-        public IActionResult ExcluirPost(int id)
+        public IActionResult ExcluirPost(int AtendId) 
         {
-            var agendamento = _dataService.ObterAgendamentoPorId(id);
-             if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out int clienteId)) return Unauthorized();
-             if (agendamento == null || agendamento.ClienteId != clienteId) return Forbid();
+            try
+            {
+                // Obter o ID do Cliente logado
+                if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out int clienteId))
+                {
+                    return Unauthorized();
+                }
 
-            string erroPreExclusao = ValidarPossibilidadeDeAlteracao(agendamento);
-            if (erroPreExclusao != null) {
-                TempData["MensagemErro"] = erroPreExclusao;
-                return RedirectToAction(nameof(ServicoController.ListaServico), "Servico");
-            }
+                //Chama o repositório
+                bool sucesso = _repository.CancelarAtendimento(AtendId, clienteId);
 
-            try {
-                if (_dataService.RemoverAgendamento(id)) {
-                    TempData["MensagemSucesso"] = "Agendamento cancelado!";
-                } else { TempData["MensagemErro"] = "Agendamento não encontrado."; }
-            } catch (Exception ex) {
-                 Console.WriteLine($"Erro ao remover agendamento ID {id}: {ex.Message}");
-                 TempData["MensagemErro"] = "Erro interno ao cancelar.";
+                if (sucesso)
+                {
+                    TempData["MensagemSucesso"] = "Agendamento cancelado com sucesso!";
+                }
+                else
+                {
+                    TempData["MensagemErro"] = "Não foi possível cancelar o agendamento.";
+                }
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro ao ExcluirPost: {ex.Message}");
+                // Se o repo deu 'throw' (ex: não pertence ao usuário)
+                TempData["MensagemErro"] = $"Erro ao cancelar: {ex.Message}";
+            }
+            
+            // Volta pra lista de agendamentos
             return RedirectToAction(nameof(ServicoController.ListaServico), "Servico");
         }
-
-
-        // =====================================================================
-        // MÉTODOS AUXILIARES PRIVADOS
-        // =====================================================================
-
-        private List<TimeSpan> GerarHorariosPotenciais()
-        {
-            var horarios = new List<TimeSpan>();
-            for (TimeSpan time = new TimeSpan(8, 0, 0); time <= new TimeSpan(11, 45, 0); time = time.Add(TimeSpan.FromMinutes(DuracaoSlotMinutos))) { horarios.Add(time); }
-            for (TimeSpan time = new TimeSpan(13, 30, 0); time <= new TimeSpan(17, 15, 0); time = time.Add(TimeSpan.FromMinutes(DuracaoSlotMinutos))) { horarios.Add(time); }
-            return horarios;
-        }
-
-        private string? ValidarRegrasDeHorario(DateTime dataHoraAgendamento)
-        {
-             var agora = DateTime.Now;
-             if (dataHoraAgendamento < agora.AddMinutes(-5)) return "Não é possível agendar/reagendar para horários passados.";
-             if (dataHoraAgendamento.Date == agora.Date) {
-                 if (agora.Hour >= 12) return "Não é possível agendar/reagendar para hoje após o meio-dia.";
-                 if (agora.Hour < 12 && dataHoraAgendamento.Hour < 13) return "Agendamentos/reagendamentos para hoje só podem ser feitos à tarde.";
-             }
-             return null;
-        }
-
-        private string? ValidarPossibilidadeDeAlteracao(Agendamento agendamento)
-        {
-            if (agendamento == null) return "Agendamento inválido.";
-            if (agendamento.DataHora < DateTime.Now.AddMinutes(-5)) return "Agendamento passado não pode ser alterado/cancelado.";
-            if (agendamento.Status == "Concluído" || agendamento.Status == "Cancelado") return $"Agendamento '{agendamento.Status}' não pode ser alterado/cancelado.";
-            return null;
-        }
-
-        private void RepopularViewModelParaEdicao(EditarAgendamentoViewModel model)
-        {
-             model.ServicosDisponiveis = new SelectList(_dataService.Servicos, "Id", "Nome", model.ServicoId);
-        }
-
-    } 
+    }
 }

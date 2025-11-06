@@ -1,9 +1,12 @@
-// Models/Servico.cs
-public class Servico
+namespace AgendaTatiNails.Models
 {
-    public int Id { get; set; } // Chave Primária
-    public string Nome { get; set; } 
-    public string Descricao { get; set; }
-    public decimal Preco { get; set; }
-    public int DuracaoEmMinutos { get; set; } // Essencial para calcular o horário
+    // Mapeia a tabela Servicos
+    public class Servico
+    {
+        public int ServicoId { get; set; }
+        public string ServicoDesc { get; set; }
+        public int ServicoDuracao { get; set; }
+        public decimal ServicoPreco { get; set; }
+        public int ServicoStatus { get; set; }
+    }
 }

@@ -1,4 +1,4 @@
-@* Views/Agendamento/Index.cshtml - Atualizado com containers de mensagem *@
+@model IEnumerable<AgendaTatiNails.Models.Servico>
 @{
     ViewData["Title"] = "Seu Agendamento";
 }
@@ -15,14 +15,28 @@
     <a href="/" class="btn-back">← Voltar para Serviços</a>
     <h1 class="page-title">Agendamento de Serviço</h1>
 
-    @* Passo 1: Calendário *@
     <section id="step-calendario" class="agendamento-step active">
         <h2>1. Escolha o Serviço e a Data</h2>
         
         <div class="form-group-service">
-            <label for="service-select">Serviço Selecionado:</label>
+            <label for="service-select">Serviço Desejado:</label>
             <select id="service-select" class="full-width-input">
-                <option value="">Carregando serviços...</option>
+                @if (Model != null && Model.Any())
+                {
+                    @foreach (var servico in Model)
+                    {
+                        <option value="@servico.ServicoId" 
+                                data-price="@servico.ServicoPreco"
+                                data-duration="@servico.ServicoDuracao"
+                                data-name="@servico.ServicoDesc">
+                            @servico.ServicoDesc (@servico.ServicoPreco.ToString("C"))
+                        </option>
+                    }
+                }
+                else
+                {
+                    <option value="">Nenhum serviço disponível.</option>
+                }
             </select>
         </div>
 
@@ -30,7 +44,6 @@
             <input type="date" id="calendar-date" min="@DateTime.Today.ToString("yyyy-MM-dd")" class="full-width-input" />
         </div>
 
-        @* NOVO: Container de Mensagem para a Etapa 1 *@
         <p id="step-1-message" class="step-message-container"></p>
 
         <div class="step-actions">
@@ -38,22 +51,16 @@
         </div>
     </section>
 
-    @* Passo 2: Horários *@
     <section id="step-horarios" class="agendamento-step">
         <h2>2. Escolha o Horário</h2>
-        <div class="horarios-grid" id="horariosGrid">
-        </div>
-
-        @* NOVO: Container de Mensagem para a Etapa 2 *@
+        <div class="horarios-grid" id="horariosGrid"></div>
         <p id="step-2-message" class="step-message-container"></p>
-
         <div class="step-actions">
             <button class="btn-secondary" id="btnVoltarCalendario">Voltar</button>
             <button class="btn-primary" id="btnProximoConfirmacao">Próximo: Confirmar</button>
         </div>
     </section>
 
-    @* Passo 3: Confirmação *@
     <section id="step-confirmacao" class="agendamento-step">
         <h2>3. Confirme seu Agendamento</h2>
         <div class="confirmation-summary">
@@ -62,10 +69,7 @@
             <p>Hora: <span class="confirm-time"></span></p>
             <p>Preço: <span class="confirm-price"></span></p>
         </div>
-
-        @* NOVO: Container de Mensagem para a Etapa 3 *@
         <p id="step-3-message" class="step-message-container"></p>
-
         <div class="step-actions">
             <button class="btn-secondary" id="btnVoltarHorarios">Voltar</button>
             <button class="btn-primary" id="btnConfirmarAgendamento">Confirmar Agendamento</button>

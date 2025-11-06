@@ -1,15 +1,12 @@
-@model IEnumerable<AgendaTatiNails.Models.Agendamento>
+@model IEnumerable<AgendaTatiNails.Models.Atendimento>
 @using System.Globalization
 
 @{
     ViewData["Title"] = "Dashboard";
-    
-    // --- DADOS VÊM DO VIEWLAG (CALCULADOS NO CONTROLLER) ---
+
     var countHoje = (int)(ViewBag.CountHoje ?? 0);
     var countProximos7Dias = (int)(ViewBag.CountProximos7Dias ?? 0);
     var faturamentoHoje = (decimal)(ViewBag.FaturamentoHoje ?? 0m);
-    
-    // O Model (agendamentosDeHoje) já vem filtrado do Controller
 }
 
 @section Styles {
@@ -24,13 +21,23 @@
         </span>
     </div>
 
-    @* Bloco de Alertas (Mantido) *@
-    @if (TempData["MensagemSucesso"] != null) { /* ... Alerta Sucesso ... */ }
-    @if (TempData["MensagemErro"] != null) { /* ... Alerta Erro ... */ }
+    @if (TempData["MensagemSucesso"] != null)
+    {
+        <div class="alert alert-success" role="alert">
+            @TempData["MensagemSucesso"]
+            <button type="button" class="btn-close" onclick="this.parentElement.style.display='none'" aria-label="Close">×</button>
+        </div>
+    }
+    @if (TempData["MensagemErro"] != null)
+    {
+         <div class="alert alert-danger" role="alert">
+            @TempData["MensagemErro"]
+            <button type="button" class="btn-close" onclick="this.parentElement.style.display='none'" aria-label="Close">×</button>
+        </div>
+    }
 
     <h2 class="admin-subtitle" style="margin-top: 1rem;">Resumo Rápido</h2>
     <div class="stat-card-grid">
-        
         <div class="stat-card">
             <div class="stat-card-icon icon-bg-purple">
                 <img src="https://api.iconify.design/lucide-calendar-check.svg" alt="" />
@@ -40,7 +47,6 @@
                 <span class="stat-card-label">Agendamento(s) Hoje</span>
             </div>
         </div>
-
         <div class="stat-card">
             <div class="stat-card-icon icon-bg-pink">
                 <img src="https://api.iconify.design/lucide-calendar-clock.svg" alt="" />
@@ -50,7 +56,6 @@
                 <span class="stat-card-label">Próximos 7 Dias</span>
             </div>
         </div>
-
         <div class="stat-card">
             <div class="stat-card-icon icon-bg-green">
                 <img src="https://api.iconify.design/lucide-dollar-sign.svg" alt="" />
@@ -66,7 +71,7 @@
         Agendamentos de Hoje (@DateTime.Today.ToString("dd/MM/yyyy"))
     </h2>
 
-    @if (Model.Any()) @* O Model agora é agendamentosDeHoje *@
+    @if (Model.Any())
     {
         <div class="table-responsive">
             <table class="admin-table">
@@ -74,29 +79,32 @@
                     <tr>
                         <th>Cliente</th>
                         <th>Horário</th>
-                        <th>Serviço</th>
-                        <th>Status</th>
+                        <th>Serviço(s)</th> <th>Status</th>
                         <th style="min-width: 150px;">Ações</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var item in Model) @* Loop direto no Model *@
+                    @foreach (var item in Model)
                     {
                         <tr>
-                            <td class="client-name">@(item.Cliente?.Nome ?? "N/A")</td>
-                            <td>@item.DataHora.ToString("HH:mm")</td>
-                            <td>@(item.Servico?.Nome ?? "N/A")</td>
-                            <td><span class="badge status-@(item.Status?.ToLower() ?? "desc")">@item.Status</span></td>
+                            <td class="client-name">@(item.Cliente?.Usuario?.UsuarioNome ?? "N/A")</td>
+                            
+                            <td>@item.AtendDataAtend.ToString("HH:mm")</td>
+                            
+                            <td>@(item.Servicos.Any() ? string.Join(", ", item.Servicos.Select(s => s.ServicoDesc)) : "N/A")</td>
+                            
+                            <td>@Html.Raw(GetStatusBadge(item.AtendStatus))</td>
+                            
                             <td class="admin-actions">
-                                @if (item.Status == "Agendado")
+                                @if (item.AtendStatus == 1) // 1 = Agendado
                                 {
                                     <form asp-action="MarcarConcluido" method="post" style="display: inline;">
-                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <input type="hidden" name="id" value="@item.AtendId" />
                                         @Html.AntiForgeryToken()
                                         <button type="submit" class="btn-sm btn-success" title="Marcar como Concluído">Concluir</button>
                                     </form>
                                     <form asp-action="CancelarAdmin" method="post" style="display: inline;">
-                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <input type="hidden" name="id" value="@item.AtendId" />
                                         @Html.AntiForgeryToken()
                                         <button type="submit" class="btn-sm btn-danger" title="Cancelar Agendamento">Cancelar</button>
                                     </form>
@@ -118,8 +126,20 @@
     }
 </div>
 
+@functions {
+    public string GetStatusBadge(int status)
+    {
+        return status switch
+        {
+            1 => "<span class=\"badge status-agendado\">Agendado</span>",
+            2 => "<span class=\"badge status-concluido\">Concluído</span>",
+            3 => "<span class=\"badge status-cancelado\">Cancelado</span>",
+            _ => "<span class=\"badge status-desc\">Desconhecido</span>"
+        };
+    }
+}
+
 @section Scripts {
-    @* Adiciona estilos e script para os alertas (se ainda não estiverem no admin.css) *@
     @if (TempData["MensagemSucesso"] != null || TempData["MensagemErro"] != null)
     {
         <style>

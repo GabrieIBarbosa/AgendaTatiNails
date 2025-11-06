@@ -1,15 +1,12 @@
-@model AgendaTatiNails.Models.Agendamento
+@model AgendaTatiNails.Models.Atendimento
 
 @{
     ViewData["Title"] = "Cancelar Agendamento";
 }
 
 @section Styles {
-
     <link rel="stylesheet" href="~/css/Agendamento/crud-page.css" asp-append-version="true" />
-    
-    <style>
-        /* Borda vermelha específica para esta página */
+    <link rel="stylesheet" href="~/css/Admin/admin.css" asp-append-version="true" /> <style>
         .crud-card { border-top-color: #dc3545; }
     </style>
 }
@@ -23,28 +20,40 @@
 
         <div class="confirmation-details">
             <dl>
-                <dt>Serviço:</dt>
-                <dd>@(Model.Servico?.Nome ?? "N/A")</dd>
+                <dt>Serviço(s):</dt>
+                <dd>@(Model.Servicos.Any() ? string.Join(", ", Model.Servicos.Select(s => s.ServicoDesc)) : "N/A")</dd>
 
                 <dt>Data e Hora:</dt>
-                <dd>@Model.DataHora.ToString("dd/MM/yyyy 'às' HH:mm")</dd>
+                <dd>@Model.AtendDataAtend.ToString("dd/MM/yyyy 'às' HH:mm")</dd>
 
                 <dt>Status Atual:</dt>
-                <dd>@Model.Status</dd>
+                <dd>@Html.Raw(GetStatusBadge(Model.AtendStatus))</dd>
             </dl>
         </div>
 
         <form asp-action="ExcluirConfirmado" method="post">
              @Html.AntiForgeryToken()
-             <input type="hidden" asp-for="Id" />
+             
+             <input type="hidden" asp-for="AtendId" />
 
-             @* CLASSE ATUALIZADA e classes de flexbox removidas (agora estão em .crud-actions) *@
              <div class="crud-actions">
-                 <button type="submit" class="btn btn-danger">Sim, Cancelar Agendamento</button>
-                 <a asp-action="ListaServico" asp-controller="Servico" class="btn btn-secondary">Não, Voltar</a>
+                  <button type="submit" class="btn btn-danger">Sim, Cancelar Agendamento</button>
+                  <a asp-action="ListaServico" asp-controller="Servico" class="btn btn-secondary">Não, Voltar</a>
              </div>
         </form>
 
     </div>
 </div>
 
+@functions {
+    public string GetStatusBadge(int status)
+    {
+        return status switch
+        {
+            1 => "<span class=\"badge status-agendado\">Agendado</span>",
+            2 => "<span class=\"badge status-concluido\">Concluído</span>",
+            3 => "<span class=\"badge status-cancelado\">Cancelado</span>",
+            _ => "<span class=\"badge status-desc\">Desconhecido</span>"
+        };
+    }
+}

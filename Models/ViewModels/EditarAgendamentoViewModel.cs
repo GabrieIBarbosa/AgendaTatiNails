@@ -1,7 +1,5 @@
-using AgendaTatiNails.Models;
-using Microsoft.AspNetCore.Mvc.ModelBinding; // Required for [BindNever]
-using Microsoft.AspNetCore.Mvc.Rendering; // Required for SelectList
-using System;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -9,31 +7,27 @@ namespace AgendaTatiNails.Models.ViewModels
 {
     public class EditarAgendamentoViewModel
     {
-        public int Id { get; set; } // ID do Agendamento a ser editado (vem do formulário hidden)
+        // --- Propriedades para o POST (Estas SIM são obrigatórias) ---
+        public int AtendimentoId { get; set; } 
 
-        [Required(ErrorMessage = "Selecione um serviço.")]
-        [Display(Name = "Serviço")]
-        public int ServicoId { get; set; } // Vem do select
+        [Required(ErrorMessage = "Selecione o novo horário.")]
+        [Range(1, int.MaxValue, ErrorMessage = "Selecione um horário válido.")]
+        public int HorarioId { get; set; } 
 
-        [Required(ErrorMessage = "Selecione a data.")]
-        [DataType(DataType.Date)]
-        [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
-        [Display(Name = "Data")]
-        public DateTime Data { get; set; } // Vem do input date
+        [Required(ErrorMessage = "Selecione o novo serviço.")]
+        [Range(1, int.MaxValue, ErrorMessage = "Selecione um serviço válido.")]
+        public int ServicoId { get; set; } 
 
-        [Required(ErrorMessage = "Selecione o horário.")]
-        [Display(Name = "Horário")]
-        public string Hora { get; set; } // Vem do select de hora
+        
+        // --- Propriedades para o GET (Marcadas como NULÁVEIS '?') ---
 
-      
-        [BindNever] // Impede que o ASP.NET Core tente validar esta propriedade no POST
-        public SelectList? ServicosDisponiveis { get; set; } // Tornada nulável '?'
+        [BindNever]
+        public Atendimento? AtendimentoAtual { get; set; } // <--- CORREÇÃO AQUI
 
-        [BindNever] // Impede que o ASP.NET Core tente validar esta propriedade no POST
-        public SelectList? HorariosDisponiveis { get; set; } // Tornada nulável '?'
+        [BindNever]
+        public Horario? HorarioAtual { get; set; } // <--- CORREÇÃO AQUI
 
-        [BindNever] // Impede que o ASP.NET Core tente validar esta propriedade no POST
-        public string? Status { get; set; } // Tornada nulável '?'
-    
+        [BindNever]
+        public SelectList? TodosOsServicos { get; set; } // <--- CORREÇÃO AQUI
     }
 }

@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using AgendaTatiNails.ViewModels; 
-using AgendaTatiNails.Models;
-using AgendaTatiNails.Repositories;
+using AgendaTatiNails.ViewModels;
+using AgendaTatiNails.Models; 
+using AgendaTatiNails.Repositories; 
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -9,76 +9,64 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System;
-using Microsoft.AspNetCore.Authorization; 
+using Microsoft.AspNetCore.Authorization;
 
 namespace AgendaTatiNails.Controllers
 {
-    [AllowAnonymous] // Permite que usuários não logados acessem as páginas de login/cadastro
+    [AllowAnonymous]
     public class LoginController : Controller
     {
-        private readonly InMemoryDataService _dataService;
+        private readonly IAgendaRepository _repository;
 
-        public LoginController(InMemoryDataService dataService)
+        public LoginController(IAgendaRepository repository)
         {
-            _dataService = dataService;
+            _repository = repository;
         }
 
         // =================================================================
         // AÇÕES DE LOGIN
         // =================================================================
 
-        // GET: /Login/Index
-        // Mostra a View de Login e captura a URL de retorno (para onde o usuário tentava ir)
         [HttpGet]
-        public IActionResult Index(string returnUrl = null)
+        public IActionResult Index(string? returnUrl = null) // Permite nulo
         {
             ViewData["ReturnUrl"] = returnUrl;
             return View();
         }
 
-        // POST: /Login/Index
-        // Processa o formulário de login
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Index(LoginViewModel model, string returnUrl = null)
+        public async Task<IActionResult> Index(LoginViewModel model, string? returnUrl = null) // Permite nulo
         {
-            ViewData["ReturnUrl"] = returnUrl; // Garante que a returnUrl persista se o login falhar
+            ViewData["ReturnUrl"] = returnUrl;
 
             if (ModelState.IsValid)
             {
-                // 1. Tenta logar como Cliente
-                var cliente = _dataService.Clientes.FirstOrDefault(c =>
-                    c.Email.Equals(model.Email, StringComparison.OrdinalIgnoreCase) &&
-                    c.Senha == model.Senha); // ATENÇÃO: Senha em texto plano (OK para demo)
+                var usuario = _repository.ObterUsuarioPorEmail(model.Email);
 
-                if (cliente != null)
+                // TODO: Implementar HASHING DE SENHA (Prioridade 3)
+                if (usuario != null && usuario.UsuarioSenha == model.Senha)
                 {
-                    await AutenticarUsuario(cliente.Id.ToString(), cliente.Nome, cliente.Email, "Cliente");
-                    
-                    // *** MUDANÇA PRINCIPAL (Etapa 1) ***
-                    // Passa a Role "Cliente" para o método de redirecionamento
-                    return RedirectToLocal(returnUrl, "Cliente");
+                    var cliente = _repository.ObterClientePorId(usuario.UsuarioId);
+
+                    if (cliente != null)
+                    {
+                        // --- É um Cliente ---
+                        await AutenticarUsuario(cliente.ClienteId.ToString(), cliente.Usuario.UsuarioNome, cliente.Usuario.UsuarioEmail, "Cliente");
+                        
+                        return RedirectToLocal(returnUrl ?? "/", "Cliente");
+                    }
+                    else
+                    {
+                        // --- É um Profissional/Admin ---
+                        await AutenticarUsuario(usuario.UsuarioId.ToString(), usuario.UsuarioNome, usuario.UsuarioEmail, "Profissional");
+                        
+                        return RedirectToLocal(returnUrl ?? "/", "Profissional");
+                    }
                 }
-
-                // 2. Se não for cliente, tenta logar como Profissional (Admin)
-                var profissional = _dataService.Profissionais.FirstOrDefault(p =>
-                    p.Email.Equals(model.Email, StringComparison.OrdinalIgnoreCase) &&
-                    p.Senha == model.Senha);
-
-                if (profissional != null)
-                {
-                    await AutenticarUsuario(profissional.Id.ToString(), profissional.Nome, profissional.Email, "Profissional");
-                    
-                    // *** MUDANÇA PRINCIPAL (Etapa 1) ***
-                    // Passa a Role "Profissional" para o método de redirecionamento
-                    return RedirectToLocal(returnUrl, "Profissional");
-                }
-
-                // 3. Se não encontrou ninguém
+                
                 ModelState.AddModelError(string.Empty, "Email ou senha inválidos.");
             }
-
-            // Se o modelo não for válido ou login falhar, retorna à View de Login
             return View(model);
         }
 
@@ -86,24 +74,21 @@ namespace AgendaTatiNails.Controllers
         // AÇÕES DE CADASTRO
         // =================================================================
 
-        // GET: /Login/Cadastro
         [HttpGet]
         public IActionResult Cadastro()
         {
             return View();
         }
 
-        // POST: /Login/Cadastro
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Cadastro(CadastroViewModel model)
         {
             if (ModelState.IsValid)
             {
-                bool emailJaExiste = _dataService.Clientes.Any(c => c.Email.Equals(model.Email, StringComparison.OrdinalIgnoreCase)) ||
-                                     _dataService.Profissionais.Any(p => p.Email.Equals(model.Email, StringComparison.OrdinalIgnoreCase));
+                var usuarioExistente = _repository.ObterUsuarioPorEmail(model.Email);
 
-                if (emailJaExiste)
+                if (usuarioExistente != null)
                 {
                     ModelState.AddModelError("Email", "Este email já está cadastrado.");
                     return View(model);
@@ -111,25 +96,35 @@ namespace AgendaTatiNails.Controllers
 
                 var novoCliente = new Cliente
                 {
-                    Nome = model.Nome,
-                    Email = model.Email,
-                    Senha = model.Senha,
-                    Telefone = model.Telefone
+                    Usuario = new Usuario
+                    {
+                        UsuarioNome = model.Nome,
+                        UsuarioEmail = model.Email,
+                        UsuarioSenha = model.Senha // TODO: Fazer HASH
+                    },
+                    ClienteTelefone = model.Telefone
                 };
 
+                
+                Cliente clienteSalvo;
                 try
                 {
-                    novoCliente = _dataService.AdicionarCliente(novoCliente);
+                    clienteSalvo = _repository.AdicionarNovoCliente(novoCliente);
                 }
                 catch (Exception ex)
                 {
-                     Console.WriteLine($"Erro ao adicionar cliente: {ex.Message}");
-                     ModelState.AddModelError(string.Empty, "Ocorreu um erro ao criar a conta.");
-                     return View(model);
+                    // Se o repositório deu 'throw' (ex: email duplicado no banco ou coisa do tipo)
+                    Console.WriteLine($"Erro ao salvar cliente no repositório: {ex.Message}");
+                    ModelState.AddModelError(string.Empty, "Ocorreu um erro ao salvar seu cadastro. Tente novamente.");
+                    return View(model);
                 }
 
-                await AutenticarUsuario(novoCliente.Id.ToString(), novoCliente.Nome, novoCliente.Email, "Cliente");
-                return RedirectToAction("Index", "Home"); // Novos cadastros são sempre Clientes
+                // Loga o usuário recém-criado
+                await AutenticarUsuario(clienteSalvo.ClienteId.ToString(), clienteSalvo.Usuario.UsuarioNome, clienteSalvo.Usuario.UsuarioEmail, "Cliente");
+                // Volta para a Home (já logado)
+                return RedirectToAction("Index", "Home"); 
+
+                
             }
             return View(model);
         }
@@ -138,24 +133,21 @@ namespace AgendaTatiNails.Controllers
         // AÇÕES DE ESQUECI A SENHA
         // =================================================================
 
-        // GET: /Login/EsqueciSenha
         [HttpGet]
         public IActionResult EsqueciSenha()
         {
             return View(new EsqueciSenhaViewModel());
         }
 
-        // POST: /Login/EsqueciSenha
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult EsqueciSenha(EsqueciSenhaViewModel model)
         {
             if (ModelState.IsValid)
             {
-                bool emailExiste = _dataService.Clientes.Any(c => c.Email.Equals(model.Email, StringComparison.OrdinalIgnoreCase)) ||
-                                   _dataService.Profissionais.Any(p => p.Email.Equals(model.Email, StringComparison.OrdinalIgnoreCase));
+                var emailExiste = _repository.ObterUsuarioPorEmail(model.Email);
 
-                if (emailExiste)
+                if (emailExiste != null)
                 {
                     var viewModel = new ConfirmacaoEnvioViewModel { Email = model.Email };
                     Console.WriteLine($"[Simulação] Enviando link de recuperação para: {model.Email}");
@@ -173,7 +165,6 @@ namespace AgendaTatiNails.Controllers
         // AÇÃO DE LOGOUT
         // =================================================================
 
-        // POST: /Login/Logout
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
@@ -193,7 +184,7 @@ namespace AgendaTatiNails.Controllers
                 new Claim(ClaimTypes.NameIdentifier, id),
                 new Claim(ClaimTypes.Name, nome),
                 new Claim(ClaimTypes.Email, email),
-                new Claim(ClaimTypes.Role, role) // Define a Role
+                new Claim(ClaimTypes.Role, role) 
             };
 
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -204,28 +195,21 @@ namespace AgendaTatiNails.Controllers
                 new ClaimsPrincipal(claimsIdentity),
                 authProperties);
         }
-
-
-        // Redireciona com base na Role se não houver URL de retorno
+        
+        // O parâmetro 'returnUrl' aqui agora é não-nulável
         private IActionResult RedirectToLocal(string returnUrl, string role)
         {
-            // Se o usuário estava tentando acessar uma página (ex: /Agendamento)
-            // e o login foi válido, manda ele de volta para lá.
             if (Url.IsLocalUrl(returnUrl) && returnUrl.Length > 1)
             {
                 return Redirect(returnUrl);
             }
 
-            // Se NÃO havia URL de retorno (veio direto para /Login):
             if (role == "Profissional")
             {
-                // *** PRONTO PARA ETAPA 2 ***
-                // Redireciona o Admin para o Dashboard dele
                 return RedirectToAction("Index", "Admin");
             }
             else
             {
-                // Redireciona o Cliente para a Home
                 return RedirectToAction(nameof(HomeController.Index), "Home");
             }
         }

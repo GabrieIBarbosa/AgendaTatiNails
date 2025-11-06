@@ -12,11 +12,11 @@ namespace AgendaTatiNails.Controllers
     [Authorize(Roles = "Profissional")]
     public class AdminController : Controller
     {
-        private readonly InMemoryDataService _dataService;
+        private readonly IAgendaRepository _repository;
 
-        public AdminController(InMemoryDataService dataService)
+        public AdminController(IAgendaRepository repository)
         {
-            _dataService = dataService;
+            _repository = repository;
         }
 
         // GET: /Admin/Index (Dashboard "Hoje")
@@ -24,61 +24,61 @@ namespace AgendaTatiNails.Controllers
         {
             var hoje = DateTime.Today;
             
-            // 1. Busca TODOS os agendamentos e preenche os dados de serviço/cliente
-            var todosAgendamentos = _dataService.ObterTodosAgendamentosComClienteEServico().ToList();
+            // 1. Busca TODOS os atendimentos
+            var todosAtendimentos = _repository.ObterTodosAtendimentos().ToList();
 
             // 2. Filtra para os agendamentos de HOJE (para a tabela)
-            var agendamentosDeHoje = todosAgendamentos
-                .Where(a => a.DataHora.Date == hoje)
-                .OrderBy(a => a.DataHora)
+            var agendamentosDeHoje = todosAtendimentos
+                .Where(a => a.AtendDataAtend.Date == hoje)
+                .OrderBy(a => a.AtendDataAtend)
                 .ToList();
 
             // 3. Calcula os dados para os STAT CARDS
             
-            // Card 1: Contagem de Agendamentos de Hoje (todos os status)
-            ViewBag.CountHoje = agendamentosDeHoje.Count();
+            // Card 1: Contagem de Hoje (Apenas status 1 = "Agendado")
+            ViewBag.CountHoje = agendamentosDeHoje
+                .Count(a => a.AtendStatus == 1); 
 
-            // Card 2: Contagem de Agendamentos dos Próximos 7 Dias (excluindo hoje)
-            ViewBag.CountProximos7Dias = todosAgendamentos
-                .Count(a => a.DataHora.Date > hoje && a.DataHora.Date <= hoje.AddDays(7));
+            // Card 2: Contagem Próximos 7 Dias (Apenas status 1 = "Agendado")
+            ViewBag.CountProximos7Dias = todosAtendimentos
+                .Count(a => a.AtendDataAtend.Date > hoje && 
+                            a.AtendDataAtend.Date <= hoje.AddDays(7) &&
+                            a.AtendStatus == 1); 
             
-            // Card 3: Faturamento de Hoje (Apenas status "Concluído")
+            // Card 3: Faturamento de Hoje (Correto: Apenas status 2 = "Concluído")
             decimal faturamentoHoje = agendamentosDeHoje
-                .Where(a => a.Status == "Concluído" && a.Servico != null) // Filtra concluídos
-                .Sum(a => a.Servico.Preco); // Soma o preço
+                .Where(a => a.AtendStatus == 2) 
+                .Sum(a => a.AtendPrecoFinal ?? 0m); 
             
             ViewBag.FaturamentoHoje = faturamentoHoje;
 
-            // 4. Passa a lista de agendamentos DE HOJE para a tabela na View
+            // 4. Passa a lista de agendamentos DE HOJE (TODOS os status) para a tabela na View
             return View(agendamentosDeHoje); 
         }
 
         // GET: /Admin/Agendamentos?dataPesquisa=YYYY-MM-DD
-        // (Ação "Ver Agendamentos", agora com busca por data)
         [HttpGet]
-        public IActionResult Agendamentos(string? dataPesquisa) // Recebe a data da busca
+        public IActionResult Agendamentos(string? dataPesquisa) 
         {
-            var agendamentosDoDia = new List<Agendamento>();
+            var agendamentosDoDia = new List<Atendimento>();
             DateTime dataSelecionada;
 
             if (DateTime.TryParse(dataPesquisa, out dataSelecionada))
             {
-                // Se uma data válida foi enviada, busca os dados
-                agendamentosDoDia = _dataService.ObterTodosAgendamentosComClienteEServico()
-                    .Where(a => a.DataHora.Date == dataSelecionada.Date)
-                    .OrderBy(a => a.DataHora)
+                agendamentosDoDia = _repository.ObterTodosAtendimentos()
+                    .Where(a => a.AtendDataAtend.Date == dataSelecionada.Date)
+                    .OrderBy(a => a.AtendDataAtend)
                     .ToList();
             }
             else
             {
-                // Se nenhuma data foi enviada (primeiro carregamento), define a data de hoje
                 dataSelecionada = DateTime.Today;
             }
 
-            // Passa a data selecionada para a View (para preencher o input)
             ViewBag.DataPesquisada = dataSelecionada.ToString("yyyy-MM-dd");
 
-            // Passa a lista (vazia ou preenchida) para a View
+            // TODO: A View 'Agendamentos.cshtml' precisa ser atualizada
+            // para exibir @model List<Atendimento>
             return View(agendamentosDoDia);
         }
 
@@ -91,22 +91,18 @@ namespace AgendaTatiNails.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult MarcarConcluido(int id)
         {
-            var agendamento = _dataService.ObterAgendamentoPorId(id);
-            if (agendamento == null)
+            try
             {
-                TempData["MensagemErro"] = "Agendamento não encontrado.";
-            }
-            else
-            {
-                // [Validação Futura] Poderíamos verificar se a data já passou, etc.
-                
-                agendamento.Status = "Concluído";
-                _dataService.AtualizarAgendamento(agendamento);
-
+                _repository.MarcarAtendimentoConcluido(id);
                 TempData["MensagemSucesso"] = $"Agendamento (ID: {id}) foi marcado como Concluído!";
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro ao MarcarConcluido: {ex.Message}");
+                TempData["MensagemErro"] = $"Erro ao marcar como concluído: {ex.Message}";
+            }
             
-            // Redireciona de volta para a página de onde veio (Dashboard ou Calendário)
+            // Redireciona de volta para a página de onde veio (Dashboard ou Agendamentos)
             string refererUrl = Request.Headers["Referer"].ToString();
             return Redirect(string.IsNullOrEmpty(refererUrl) ? Url.Action("Index") : refererUrl);
         }
@@ -114,21 +110,17 @@ namespace AgendaTatiNails.Controllers
         // POST: /Admin/CancelarAdmin
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult CancelarAdmin(int id) // Nome da Ação bate com o <form>
+        public IActionResult CancelarAdmin(int id) 
         {
-            var agendamento = _dataService.ObterAgendamentoPorId(id);
-            if (agendamento == null)
+            try
             {
-                TempData["MensagemErro"] = "Agendamento não encontrado.";
-            }
-            else
-            {
-                // [Validação Futura]
-
-                agendamento.Status = "Cancelado";
-                _dataService.AtualizarAgendamento(agendamento);
-
+                _repository.CancelarAtendimentoAdmin(id);
                 TempData["MensagemSucesso"] = $"Agendamento (ID: {id}) foi Cancelado.";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro ao CancelarAdmin: {ex.Message}");
+                TempData["MensagemErro"] = $"Erro ao cancelar: {ex.Message}";
             }
 
             string refererUrl = Request.Headers["Referer"].ToString();
@@ -140,39 +132,28 @@ namespace AgendaTatiNails.Controllers
         // =====================================================================
         public IActionResult Financeiro()
         {
-            // 1. Buscar todos os agendamentos e pré-carregar dados
-            var todosAgendamentos = _dataService.ObterTodosAgendamentosComClienteEServico();
+            var todosAtendimentos = _repository.ObterTodosAtendimentos();
 
-            // 2. Filtrar apenas os concluídos
-            var agendamentosConcluidos = todosAgendamentos
-                .Where(a => a.Status == "Concluído")
+            // Filtrar apenas os concluídos (Assumindo 2 = Concluído)
+            var agendamentosConcluidos = todosAtendimentos
+                .Where(a => a.AtendStatus == 2) 
                 .ToList();
 
-            // 3. Calcular totais para os cards
-            // Garante que o preço seja 0 se o serviço for nulo
-            decimal faturamentoTotal = agendamentosConcluidos.Sum(a => a.Servico?.Preco ?? 0m);
+            // Calcular totais para os cards
+            // Usamos o AtendPrecoFinal, que é muito mais preciso!
+            decimal faturamentoTotal = agendamentosConcluidos.Sum(a => a.AtendPrecoFinal ?? 0m);
             int totalServicosConcluidos = agendamentosConcluidos.Count();
 
-            // 4. Calcular faturamento por tipo de serviço
-            var faturamentoPorServico = agendamentosConcluidos
-                .Where(a => a.Servico != null) // Garante que o serviço não é nulo
-                .GroupBy(a => a.Servico.Nome) // Agrupa por "Mão", "Pé", etc.
-                .Select(g => new ServicoFaturadoViewModel
-                {
-                    ServicoNome = g.Key,
-                    Quantidade = g.Count(),
-                    Total = g.Sum(a => a.Servico?.Preco ?? 0m)
-                })
-                .OrderByDescending(s => s.Total)
-                .ToList();
-
-            // 5. Enviar dados para a View
+            // REMOVIDO: Faturamento por Tipo de Serviço
+            // Com o novo banco, um Atendimento tem MÚLTIPLOS serviços
+            // e um ÚNICO preço final. Não é mais possível agrupar por nome de serviço.
+            
+            // Enviar dados para a View
             ViewBag.FaturamentoTotal = faturamentoTotal;
             ViewBag.TotalServicosConcluidos = totalServicosConcluidos;
-            ViewBag.FaturamentoPorServico = faturamentoPorServico; 
+            ViewBag.FaturamentoPorServico = new List<ServicoFaturadoViewModel>(); // Envia lista vazia
 
-            // Passa a lista detalhada de agendamentos concluídos como Model
-            return View(agendamentosConcluidos.OrderByDescending(a => a.DataHora)); 
+            return View(agendamentosConcluidos.OrderByDescending(a => a.AtendDataAtend)); 
         }
     }
 }

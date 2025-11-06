@@ -1,10 +1,9 @@
-@model IEnumerable<AgendaTatiNails.Models.Agendamento>
+@model IEnumerable<AgendaTatiNails.Models.Atendimento>
 @using AgendaTatiNails.Models.ViewModels
 
 @{
     ViewData["Title"] = "Relatório Financeiro";
     
-    // Pega os dados calculados que o Controller enviou pelo ViewBag
     var faturamentoTotal = (decimal)(ViewBag.FaturamentoTotal ?? 0m);
     var totalServicos = (int)(ViewBag.TotalServicosConcluidos ?? 0);
     var faturamentoPorServico = (List<ServicoFaturadoViewModel>)(ViewBag.FaturamentoPorServico ?? new List<ServicoFaturadoViewModel>());
@@ -20,7 +19,6 @@
         <span class="welcome-badge" style="background-color: #15803d;">@User.Identity.Name</span>
     </div>
 
-    
     <div class="stat-card-grid" style="margin-top: 2rem;">
         <div class="stat-card">
             <div class="stat-card-icon icon-bg-green">
@@ -62,7 +60,7 @@
     }
     else
     {
-        <p>Nenhum serviço concluído encontrado para gerar um resumo.</p>
+        <p><i>O resumo de faturamento por serviço não está mais disponível com o novo sistema de múltiplos serviços.</i></p>
     }
 
 
@@ -75,19 +73,21 @@
                     <tr>
                         <th>Cliente</th>
                         <th>Data Conclusão</th>
-                        <th>Serviço</th>
-                        <th>Valor (R$)</th>
+                        <th>Serviço(s)</th> <th>Valor (R$)</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var item in Model) @* O Model só contém os concluídos *@
+                    @foreach (var item in Model) 
                     {
                         <tr>
-                            <td class="client-name">@(item.Cliente?.Nome ?? "N/A")</td>
-                            <td>@item.DataHora.ToString("dd/MM/yyyy 'às' HH:mm")</td>
-                            <td>@(item.Servico?.Nome ?? "N/A")</td>
+                            <td class="client-name">@(item.Cliente?.Usuario?.UsuarioNome ?? "N/A")</td>
+                            
+                            <td>@item.AtendDataAtend.ToString("dd/MM/yyyy 'às' HH:mm")</td>
+                            
+                            <td>@(item.Servicos.Any() ? string.Join(", ", item.Servicos.Select(s => s.ServicoDesc)) : "N/A")</td>
+                            
                             <td style="color: #15803d; font-weight: 500;">
-                                @(item.Servico?.Preco.ToString("C", new System.Globalization.CultureInfo("pt-BR")) ?? "R$ 0,00")
+                                @(item.AtendPrecoFinal?.ToString("C", new System.Globalization.CultureInfo("pt-BR")) ?? "R$ 0,00")
                             </td>
                         </tr>
                     }
