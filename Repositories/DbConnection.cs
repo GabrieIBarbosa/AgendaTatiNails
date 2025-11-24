@@ -1,4 +1,4 @@
-using Microsoft.Data.SqlClient; // Use Microsoft.Data.SqlClient (o mais novo) ou System.Data.SqlClient
+using Microsoft.Data.SqlClient; 
 using System;
 
 namespace AgendaTatiNails.Repositories

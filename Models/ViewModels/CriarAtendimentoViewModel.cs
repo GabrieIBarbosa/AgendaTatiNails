@@ -2,15 +2,14 @@ using System.ComponentModel.DataAnnotations;
 
 namespace AgendaTatiNails.Models.ViewModels
 {
-    
     public class CriarAtendimentoViewModel
     {
         [Required]
-        [Range(1, int.MaxValue)]
-        public int HorarioId { get; set; } // O ID do 'slot' de Horario escolhido
+        public int HorarioId { get; set; }
 
-        [Required]
-        [Range(1, int.MaxValue)]
-        public int ServicoId { get; set; } // O ID do serviço ÚNICO escolhido
+        [Required(ErrorMessage = "Selecione um serviço.")]
+        [Range(1, int.MaxValue, ErrorMessage = "Serviço inválido.")]
+        public int ServicoId { get; set; } 
+        public string Observacao { get; set; }
     }
 }

@@ -1,0 +1,49 @@
+@model AgendaTatiNails.Models.Atendimento
+
+@{
+    ViewData["Title"] = "Cancelar Agendamento";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-5" style="max-width: 600px;">
+    <div class="card border-danger shadow">
+        <div class="card-header bg-danger text-white">
+            <h3 class="mb-0">Confirmar Cancelamento</h3>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle"></i>
+                Você está prestes a cancelar o agendamento de <strong>@(Model.Cliente?.Usuario?.UsuarioNome ?? "Cliente")</strong>.
+            </div>
+
+            <dl class="row">
+                <dt class="col-sm-4">Data:</dt>
+                <dd class="col-sm-8">@Model.AtendDataAtend.ToString("dd/MM/yyyy HH:mm")</dd>
+
+                <dt class="col-sm-4">Serviço:</dt>
+                <dd class="col-sm-8">@Model.Servicos.FirstOrDefault()?.ServicoDesc</dd>
+            </dl>
+
+            <form asp-action="CancelarConfirmado" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="AtendId" value="@Model.AtendId" />
+
+                <div class="form-group mb-4">
+                    <label for="motivo" class="fw-bold mb-2">Motivo do Cancelamento (Obrigatório):</label>
+                    <textarea name="motivo" id="motivo" class="form-control" rows="3" 
+                              placeholder="Ex: Cliente não compareceu / Imprevisto na agenda..." required></textarea>
+                    <small class="text-muted">Este motivo ficará visível para o cliente.</small>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a asp-action="Index" class="btn btn-secondary">Voltar</a>
+                    <button type="submit" class="btn btn-danger fw-bold">Confirmar Cancelamento</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/Admin/admin-crud.css" asp-append-version="true" />
+}

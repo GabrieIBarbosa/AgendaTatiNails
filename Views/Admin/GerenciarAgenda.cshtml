@@ -1,0 +1,143 @@
+@model IEnumerable<AgendaTatiNails.Models.Horario>
+@{
+    ViewData["Title"] = "Gerenciar Agenda";
+    DateTime dataSel = ViewBag.DataSelecionada;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/Admin/agenda-gerenciamento.css" asp-append-version="true" />
+}
+
+<div class="container py-4"> @if (TempData["MensagemSucesso"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+            <i class="fa fa-check-circle me-2"></i> @TempData["MensagemSucesso"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["MensagemErro"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+            <i class="fa fa-exclamation-triangle me-2"></i> @TempData["MensagemErro"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="gerenciar-agenda-card">
+        
+        <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+            <h2 class="m-0 fw-bold text-magenta">Gerenciar Disponibilidade</h2>
+             <button type="button" class="btn btn-outline-danger fw-bold" data-bs-toggle="modal" data-bs-target="#modalBloquearDia">
+                <i class="fa fa-ban me-1"></i> Bloquear Dia Inteiro
+            </button>
+        </div>
+
+        <form method="get" class="row g-3 align-items-end mb-4">
+            <div class="col-md-4 col-lg-3">
+                <label for="dataFiltro" class="form-label fw-bold text-secondary">Selecionar Data:</label>
+                <input type="date" id="dataFiltro" name="data" class="form-control form-control-lg" value="@dataSel.ToString("yyyy-MM-dd")" />
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-brand-primary btn-lg w-100">
+                    Buscar
+                </button>
+            </div>
+        </form>
+
+        <div class="table-responsive rounded-3 border">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="py-3 ps-4">Horário</th>
+                        <th class="py-3">Status Atual</th>
+                        <th class="py-3 text-center">Ação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="3" class="text-center text-muted py-5">
+                                <div class="d-flex flex-column align-items-center">
+                                    <i class="fa fa-calendar-times fa-3x mb-3 text-secondary opacity-25"></i>
+                                    <p class="mb-0 fw-bold">Nenhum horário gerado.</p>
+                                    <small>Selecione uma data futura para gerenciar.</small>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="ps-4 fw-bold text-dark">@item.HorarioPeriodo.ToString(@"hh\:mm")</td>
+                            
+                            <td>
+                                @if (item.HorarioStatus == 1) { 
+                                    <span class="badge bg-success bg-opacity-10 text-success border border-success px-3 py-2 rounded-pill">Livre</span> 
+                                }
+                                else if (item.HorarioStatus == 2) { 
+                                    <span class="badge bg-warning bg-opacity-10 text-warning border border-warning px-3 py-2 rounded-pill">Agendado (Cliente)</span> 
+                                }
+                                else if (item.HorarioStatus == 3) { 
+                                    <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary px-3 py-2 rounded-pill">Bloqueado (Admin)</span> 
+                                }
+                            </td>
+
+                            <td class="text-center">
+                                @if (item.HorarioStatus == 1)
+                                {
+                                    <form asp-action="AlternarBloqueioSlot" method="post">
+                                        <input type="hidden" name="horarioId" value="@item.HorarioId" />
+                                        <input type="hidden" name="statusAtual" value="1" />
+                                        <input type="hidden" name="dataRedirecionamento" value="@dataSel.ToString("yyyy-MM-dd")" />
+                                        <button class="btn btn-sm btn-danger px-3 fw-bold">Bloquear</button>
+                                    </form>
+                                }
+                                else if (item.HorarioStatus == 3)
+                                {
+                                    <form asp-action="AlternarBloqueioSlot" method="post">
+                                        <input type="hidden" name="horarioId" value="@item.HorarioId" />
+                                        <input type="hidden" name="statusAtual" value="3" />
+                                        <input type="hidden" name="dataRedirecionamento" value="@dataSel.ToString("yyyy-MM-dd")" />
+                                        <button class="btn btn-sm btn-success px-3 fw-bold">Liberar</button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <a asp-action="Detalhes" asp-route-id="@item.IdAtend" class="btn btn-sm btn-info text-white px-3 fw-bold">
+                                        Ver Detalhes
+                                    </a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalBloquearDia" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0">
+            <form asp-action="BloquearDia" method="post">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title fw-bold">Confirmar Bloqueio Total</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="fs-5 text-center mb-3">Deseja bloquear o dia <strong>@dataSel.ToShortDateString()</strong>?</p>
+                    <div class="alert alert-warning text-center small">
+                        Isso impedirá novos agendamentos. Clientes agendados <strong>não</strong> serão cancelados.
+                    </div>
+                    <input type="hidden" name="data" value="@dataSel.ToString("yyyy-MM-dd")" />
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger fw-bold">Sim, Bloquear Tudo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

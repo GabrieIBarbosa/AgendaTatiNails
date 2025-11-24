@@ -1,0 +1,53 @@
+/* Fundo cinza suave */
+body {
+    background-color: #f8f9fa;
+}
+
+/* O Cartão Centralizado */
+.gerenciar-agenda-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); /* Sombra elegante */
+    padding: 2rem;
+    margin-top: 1rem;
+    margin-bottom: 3rem;
+    border: 1px solid rgba(0,0,0,0.05);
+    
+    /* Centraliza e limita largura em telas grandes */
+    max-width: 1000px; 
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Cor Magenta da Marca */
+.text-magenta {
+    color: #880e4f;
+}
+
+/* Botão Principal */
+.btn-brand-primary {
+    background-color: #880e4f;
+    border-color: #880e4f;
+    color: white;
+    transition: all 0.2s;
+}
+
+.btn-brand-primary:hover {
+    background-color: #6a0b3d;
+    border-color: #6a0b3d;
+    color: white;
+    transform: translateY(-1px);
+}
+
+/* Ajustes finos na tabela */
+.table thead th {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6c757d;
+}
+
+.badge {
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}

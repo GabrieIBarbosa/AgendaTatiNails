@@ -97,7 +97,7 @@
     color: var(--color-secondary); /* Roxo */
 }
 
-/* --- Badges de Status (Copiado de lista-servicos.css) --- */
+/* --- Badges de Status --- */
 .badge {
     padding: 0.4em 0.8em;
     font-size: 0.8rem;
@@ -115,6 +115,7 @@
 .admin-actions {
     display: flex;
     gap: 0.5rem;
+    align-items: center;
 }
 
 .admin-actions .btn-sm {
@@ -181,6 +182,27 @@
     margin-bottom: 2.5rem;
 }
 
+/* ===== NOVO: Estilos para Cards Clicáveis ===== */
+.stat-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block; /* Faz o link ocupar todo o espaço do card */
+    transition: transform 0.2s ease;
+}
+
+/* Efeito Hover no Link: Move o card inteiro para cima */
+.stat-card-link:hover {
+    transform: translateY(-5px);
+}
+
+/* Efeito Hover no Card (dentro do Link): Aumenta a sombra */
+.stat-card-link:hover .stat-card {
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    border-color: rgba(136, 14, 79, 0.2); /* Borda levemente magenta */
+}
+/* ============================================== */
+
+
 /* Card de estatística individual */
 .stat-card {
     background-color: #fdfdff; /* Quase branco */
@@ -190,11 +212,7 @@
     display: flex;
     align-items: center;
     gap: 1rem;
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-.stat-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 15px rgba(0,0,0,0.06);
+    transition: box-shadow 0.2s; /* A transição do transform agora é no link */
 }
 
 /* Ícone do card (ex: calendário, cifrão) */
@@ -240,38 +258,68 @@
 
 /* --- Estilos para o Formulário de Busca (Admin/Agendamentos) --- */
 .admin-search-form {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    align-items: flex-end; /* Alinha o label, input e botão */
-    padding: 1.5rem;
-    background-color: #f9fafb; /* Fundo cinza claro */
-    border-radius: 8px;
+    display: grid;
+    /* Cria colunas automáticas: data, data, botão */
+    grid-template-columns: repeat(auto-fit, minmax(200px, max-content));
+    gap: 1.5rem;
+    align-items: end; /* Alinha tudo pela base */
+    
+    padding: 2rem;
+    background-color: #f9fafb;
+    border-radius: 12px;
     margin-bottom: 2.5rem;
+    border: 1px solid #eee;
 }
+
 .admin-search-form .form-group {
-    flex-grow: 1; /* Faz o grupo do input crescer */
-    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+    position: relative; /* Garante que o calendário abra no lugar certo */
+    z-index: 10; /* Garante que fique acima de outros elementos */
 }
-/* Reutiliza estilo de label (se não tiver .form-group global) */
+
 .admin-search-form label {
-    display: block;
     font-weight: 600;
     color: var(--color-text-medium);
     margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    width: max-content; /* O label ocupa só o espaço do texto, evitando cliques falsos */
 }
+
 .admin-search-form .form-control {
     width: 100%;
-    max-width: 300px; /* Limita largura do input de data */
-    padding: 0.8rem 1rem;
+    min-width: 220px; /* Tamanho mínimo confortável */
+    padding: 0.75rem 1rem;
     font-size: 1rem;
     border: 1px solid #ccc;
     border-radius: 8px;
-    font-family: inherit; /* Garante a fonte correta */
+    font-family: inherit;
+    height: 48px; 
+    box-sizing: border-box;
+    cursor: pointer; /* Mostra que é clicável */
 }
+
 .admin-search-form .btn-primary {
-     height: fit-content; /* Alinha altura com input */
-     padding: 0.8rem 1.5rem; /* Ajusta padding */
+     height: 48px;
+     padding: 0 2rem;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     font-weight: 600;
+     white-space: nowrap; /* Texto não quebra */
+}
+
+/* No celular, coloca um embaixo do outro */
+@media (max-width: 768px) {
+    .admin-search-form {
+        grid-template-columns: 1fr; /* Uma coluna só */
+    }
+    .admin-search-form .form-control {
+        min-width: 100%;
+    }
+    .admin-search-form .btn-primary {
+        width: 100%;
+    }
 }
 
 /* =======================================================

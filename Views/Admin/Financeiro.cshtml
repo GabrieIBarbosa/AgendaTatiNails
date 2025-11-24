@@ -7,6 +7,10 @@
     var faturamentoTotal = (decimal)(ViewBag.FaturamentoTotal ?? 0m);
     var totalServicos = (int)(ViewBag.TotalServicosConcluidos ?? 0);
     var faturamentoPorServico = (List<ServicoFaturadoViewModel>)(ViewBag.FaturamentoPorServico ?? new List<ServicoFaturadoViewModel>());
+
+    // Datas para o filtro
+    var dataInicio = ViewBag.DataInicio as DateTime? ?? DateTime.Today;
+    var dataFim = ViewBag.DataFim as DateTime? ?? DateTime.Today;
 }
 
 @section Styles {
@@ -19,14 +23,34 @@
         <span class="welcome-badge" style="background-color: #15803d;">@User.Identity.Name</span>
     </div>
 
-    <div class="stat-card-grid" style="margin-top: 2rem;">
+    <form method="get" asp-action="Financeiro" class="admin-search-form">
+        <div class="form-group">
+            <label for="dataInicio">Data Início:</label>
+            <input type="date" id="dataInicio" name="dataInicio" 
+                   value="@dataInicio.ToString("yyyy-MM-dd")" 
+                   class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label for="dataFim">Data Fim:</label>
+            <input type="date" id="dataFim" name="dataFim" 
+                   value="@dataFim.ToString("yyyy-MM-dd")" 
+                   class="form-control" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            <i class="fa fa-filter me-2"></i> Filtrar
+        </button>
+    </form>
+
+    <div class="stat-card-grid">
         <div class="stat-card">
             <div class="stat-card-icon icon-bg-green">
                 <img src="https://api.iconify.design/lucide-dollar-sign.svg" alt="" />
             </div>
             <div class="stat-card-info">
                 <span class="stat-card-value">@faturamentoTotal.ToString("C", new System.Globalization.CultureInfo("pt-BR"))</span>
-                <span class="stat-card-label">Faturamento Total (Concluídos)</span>
+                <span class="stat-card-label">Faturamento Total</span>
             </div>
         </div>
         <div class="stat-card">
@@ -35,12 +59,12 @@
             </div>
             <div class="stat-card-info">
                 <span class="stat-card-value">@totalServicos</span>
-                <span class="stat-card-label">Serviços Concluídos</span>
+                <span class="stat-card-label">Serviços no Período</span>
             </div>
         </div>
     </div>
 
-    <h2 class="admin-subtitle">Resumo por Serviço</h2>
+    <h2 class="admin-subtitle">Resumo por Serviço (No Período)</h2>
     @if (faturamentoPorServico.Any())
     {
         <ul class="finance-breakdown-list">
@@ -48,11 +72,11 @@
             {
                 <li>
                     <div class="breakdown-service-name">
-                        @servico.ServicoNome
+                        @servico.NomeServico
                         <span>(@servico.Quantidade x)</span>
                     </div>
                     <div class="breakdown-service-total">
-                        @servico.Total.ToString("C", new System.Globalization.CultureInfo("pt-BR"))
+                        @servico.ValorTotal.ToString("C", new System.Globalization.CultureInfo("pt-BR"))
                     </div>
                 </li>
             }
@@ -60,11 +84,13 @@
     }
     else
     {
-        <p><i>O resumo de faturamento por serviço não está mais disponível com o novo sistema de múltiplos serviços.</i></p>
+        <div class="text-center py-4 text-muted">
+            <i class="fa fa-info-circle me-2"></i> Nenhum serviço concluído neste período.
+        </div>
     }
 
 
-    <h2 class="admin-subtitle">Histórico de Serviços Concluídos</h2>
+    <h2 class="admin-subtitle">Histórico Detalhado</h2>
     @if (Model.Any())
     {
         <div class="table-responsive">
@@ -73,7 +99,8 @@
                     <tr>
                         <th>Cliente</th>
                         <th>Data Conclusão</th>
-                        <th>Serviço(s)</th> <th>Valor (R$)</th>
+                        <th>Serviço(s)</th> 
+                        <th>Valor (R$)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -82,7 +109,7 @@
                         <tr>
                             <td class="client-name">@(item.Cliente?.Usuario?.UsuarioNome ?? "N/A")</td>
                             
-                            <td>@item.AtendDataAtend.ToString("dd/MM/yyyy 'às' HH:mm")</td>
+                            <td>@(item.atendDataConclusao?.ToString("dd/MM/yyyy 'às' HH:mm") ?? item.AtendDataAtend.ToString("dd/MM/yyyy"))</td>
                             
                             <td>@(item.Servicos.Any() ? string.Join(", ", item.Servicos.Select(s => s.ServicoDesc)) : "N/A")</td>
                             
@@ -99,7 +126,7 @@
     {
         <div class="text-center mt-5 no-appointments">
             <img src="https://api.iconify.design/lucide-archive.svg" alt="Arquivo Vazio" class="no-appointments-icon" />
-            <p class="lead">Nenhum agendamento concluído encontrado.</p>
+            <p class="lead">Nenhum registro financeiro para este filtro.</p>
         </div>
     }
 </div>

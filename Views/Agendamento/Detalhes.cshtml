@@ -5,51 +5,134 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/css/Agendamento/crud-page.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/Admin/admin.css" asp-append-version="true" />
-
+    <link rel="stylesheet" href="~/css/Agendamento/agendamento-page.css" asp-append-version="true" />
     <style>
-        /* Estilos */
-        .details-actions {
-            margin-top: 2rem;
-            border-top: 1px solid #eee;
-            padding-top: 1.5rem;
-            display: flex;
-            gap: 1rem;
+        /* CSS Local para garantir o visual de Card Limpo */
+        .detalhes-container {
+            max-width: 800px;
+            margin: 3rem auto;
+            padding: 0 1rem;
         }
+        .detalhes-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            padding: 2.5rem;
+            border-top: 5px solid #880e4f; /* Roxo da marca */
+        }
+        .detalhes-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 1rem;
+        }
+        .detalhes-title {
+            font-size: 1.8rem;
+            color: #333;
+            font-weight: 600;
+            margin: 0;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .info-item label {
+            display: block;
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.3rem;
+            font-weight: 600;
+        }
+        .info-item p {
+            font-size: 1.1rem;
+            color: #333;
+            font-weight: 500;
+            margin: 0;
+        }
+        .price-tag {
+            color: #198754 !important; /* Verde */
+            font-weight: 700 !important;
+            font-size: 1.2rem !important;
+        }
+        .btn-voltar-outline {
+            border: 1px solid #880e4f;
+            color: #880e4f;
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-block;
+        }
+        .btn-voltar-outline:hover {
+            background-color: #880e4f;
+            color: white;
+        }
+
+        
     </style>
 }
 
-<div class="crud-container">
-    <div class="crud-card">
-
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-            <h1 class="crud-title" style="text-align: left; margin: 0;">@ViewData["Title"]</h1>
-            <a asp-action="ListaServico" asp-controller="Servico" class="btn btn-secondary">← Voltar para Lista</a>
-        </div>
+<div class="detalhes-container">
+    <div class="detalhes-card">
         
-        <div class="confirmation-details">
-            <dl>
-                <dt>Serviço(s)</dt>
-                <dd>@(Model.Servicos.Any() ? string.Join(", ", Model.Servicos.Select(s => s.ServicoDesc)) : "N/A")</dd>
-
-                <dt>Data e Hora</dt>
-                <dd>@Model.AtendDataAtend.ToString("dd/MM/yyyy 'às' HH:mm")</dd>
-
-                <dt>Status</dt>
-                <dd>@Html.Raw(GetStatusBadge(Model.AtendStatus))</dd>
-
-                <dt>Preço Final</dt>
-                <dd>@(Model.AtendPrecoFinal?.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("pt-BR")) ?? "Aguardando")</dd>
-
-                <dt>Duração Estimada</dt>
-                <dd>@(Model.Servicos.Sum(s => s.ServicoDuracao).ToString()) minutos</dd>
-            </dl>
+        <div class="detalhes-header">
+            <h1 class="detalhes-title">Detalhes do Agendamento #@Model.AtendId</h1>
+            @Html.Raw(GetStatusBadge(Model.AtendStatus))
         </div>
 
-        <div class="details-actions">
-            <a asp-controller="Agendamento" asp-action="Editar" asp-route-id="@Model.AtendId" class="btn btn-warning">Editar</a>
-            <a asp-controller="Agendamento" asp-action="Excluir" asp-route-id="@Model.AtendId" class="btn btn-danger">Cancelar Agendamento</a>
+        <div class="info-grid">
+            <div class="info-item">
+                <label>Serviço:</label>
+                <p>
+                    @(Model.Servicos.Any() ? string.Join(", ", Model.Servicos.Select(s => s.ServicoDesc)) : "N/A")
+                </p>
+            </div>
+
+            <div class="info-item">
+                <label>Data do Atendimento:</label>
+                <p>@Model.AtendDataAtend.ToString("dd/MM/yyyy")</p>
+            </div>
+
+            <div class="info-item">
+                <label>Profissional:</label>
+                <p>@(Model.Colaborador?.Usuario?.UsuarioNome ?? "Tati (Profissional)")</p>
+            </div>
+
+            <div class="info-item">
+                <label>Horário:</label>
+                <p>@Model.AtendDataAtend.ToString("HH:mm")</p>
+            </div>
+
+            <div class="info-item">
+                <label>Valor Final:</label>
+                <p class="price-tag">
+                    @(Model.AtendPrecoFinal.HasValue ? Model.AtendPrecoFinal.Value.ToString("C") : "R$ 0,00")
+                </p>
+            </div>
+
+            <div class="info-item">
+                <label>Data da Solicitação:</label>
+                <p>@Model.AtendDataAgend.ToString("dd/MM/yyyy HH:mm")</p>
+            </div>
+            
+            @if (!string.IsNullOrEmpty(Model.AtendObs))
+            {
+                <div class="info-item" style="grid-column: 1 / -1;">
+                    <label>Observações:</label>
+                    <p style="font-style: italic; color: #555;">"@Model.AtendObs"</p>
+                </div>
+            }
+        </div>
+
+        <div style="margin-top: 2rem; border-top: 1px solid #eee; padding-top: 1.5rem;">
+            <a asp-controller="Servico" asp-action="ListaServico" class="btn-voltar-outline">
+                <i class="fa fa-arrow-left"></i> Voltar para Meus Agendamentos
+            </a>
         </div>
 
     </div>
@@ -58,34 +141,22 @@
 @functions {
     public string GetStatusBadge(int status)
     {
-        return status switch
+        string colorClass = status switch
         {
-            1 => "<span class=\"badge status-agendado\">Agendado</span>",
-            2 => "<span class=\"badge status-concluido\">Concluído</span>",
-            3 => "<span class=\"badge status-cancelado\">Cancelado</span>",
-            _ => "<span class=\"badge status-desc\">Desconhecido</span>"
+            1 => "background-color: #fff3cd; color: #856404;", // Amarelo (Agendado)
+            2 => "background-color: #d1e7dd; color: #0f5132;", // Verde (Concluído)
+            3 => "background-color: #f8d7da; color: #721c24;", // Vermelho (Cancelado)
+            _ => "background-color: #e2e3e5; color: #383d41;"
         };
+
+        string statusText = status switch
+        {
+            1 => "Agendado",
+            2 => "Concluído",
+            3 => "Cancelado",
+            _ => "Desconhecido"
+        };
+
+        return $"<span style=\"padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600; font-size: 0.9rem; {colorClass}\">{statusText}</span>";
     }
-}
-
-
-@section Scripts {
-    <style>
-        .btn-warning {
-            color: #000;
-            background-color: #ffc107;
-            border-color: #ffc107;
-            padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 600;
-            text-decoration: none; display: inline-flex; align-items: center;
-            justify-content: center; transition: all 0.2s;
-            font-family: var(--fonte-titulo); white-space: nowrap;
-            border: 1px solid transparent;
-        }
-        .btn-warning:hover {
-            color: #000;
-            background-color: #ffca2c;
-            border-color: #ffc720;
-            transform: translateY(-2px);
-        }
-    </style>
 }

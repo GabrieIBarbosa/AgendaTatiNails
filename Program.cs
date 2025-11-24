@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
-using AgendaTatiNails.Repositories; 
+using AgendaTatiNails.Repositories.Interfaces;
+using AgendaTatiNails.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,7 +9,10 @@ builder.Services.AddControllersWithViews();
 // Adiciona a interface e a implementação do repositório SQL.
 // AddScoped = "Crie uma nova instância para cada requisição web"
 // Isso é ESSENCIAL para repositórios de banco de dados.
-builder.Services.AddScoped<IAgendaRepository, SqlAgendaRepository>();
+builder.Services.AddScoped<IUsuarioRepository, SqlUsuarioRepository>();
+builder.Services.AddScoped<IServicoRepository, SqlServicoRepository>();
+builder.Services.AddScoped<IHorarioRepository, SqlHorarioRepository>();
+builder.Services.AddScoped<IAtendimentoRepository, SqlAtendimentoRepository>();
 
 
 

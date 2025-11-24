@@ -1,0 +1,186 @@
+@model AgendaTatiNails.Models.ViewModels.EditarAgendamentoViewModel
+
+@{
+    ViewData["Title"] = "Editar Agendamento";
+    
+    var dataAtual = Model.HorarioAtual?.HorarioData.ToString("yyyy-MM-dd") ?? DateTime.Today.ToString("yyyy-MM-dd");
+    var horarioIdAtual = Model.HorarioAtual?.HorarioId ?? 0;
+    var horaAtualFormatada = Model.HorarioAtual?.HorarioPeriodo.ToString(@"hh\:mm") ?? "";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/Agendamento/agendamento-page.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/Agendamento/crud-page.css" asp-append-version="true" />
+    <style>
+        /* Ajustes específicos para o Admin */
+        .crud-container { max-width: 600px; margin: 2rem auto; }
+        .full-width-input { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; margin-top: 5px; }
+        .btn-full-width { width: 100%; margin-top: 1rem; padding: 12px; font-weight: bold; }
+    </style>
+}
+
+<div class="crud-container">
+    <div class="crud-card">
+
+        <h1 class="crud-title">@ViewData["Title"]</h1>
+
+        @if (TempData["MensagemErro"] != null)
+        {
+            <div class="alert alert-danger" style="background-color: #f8d7da; color: #721c24; padding: 15px; margin-bottom: 20px; border-radius: 5px; border: 1px solid #f5c6cb;">
+                <strong>Ocorreu um erro:</strong> @TempData["MensagemErro"]
+            </div>
+        }
+
+        @if (TempData["MensagemSucesso"] != null)
+        {
+            <div class="alert alert-success" style="background-color: #d4edda; color: #155724; padding: 15px; margin-bottom: 20px; border-radius: 5px; border: 1px solid #c3e6cb;">
+                @TempData["MensagemSucesso"]
+            </div>
+        }
+
+        <p class="crud-subtitle">Altere os dados do agendamento abaixo.</p>
+
+        <div asp-validation-summary="ModelOnly" class="text-danger crud-message"></div>
+        <p id="edit-message" class="step-message-container"></p>
+
+        <form asp-controller="Admin" asp-action="Editar" method="post">
+            @Html.AntiForgeryToken()
+            
+            <input type="hidden" asp-for="AtendimentoId" />
+
+            <div class="form-group mb-3">
+                <label asp-for="ServicoId" class="control-label fw-bold">Serviço</label>
+                <select asp-for="ServicoId" id="service-select" class="full-width-input" asp-items="Model.TodosOsServicos">
+                </select>
+                <span asp-validation-for="ServicoId" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label for="calendar-date" class="fw-bold">Data</label>
+                <input id="calendar-date" class="full-width-input" type="date" 
+                       value="@dataAtual" 
+                       min="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="HorarioId" class="control-label fw-bold">Horário</label>
+                <select asp-for="HorarioId" id="horario-select" class="full-width-input" required>
+                    <option value="">-- Selecione a data --</option>
+                </select>
+                <span asp-validation-for="HorarioId" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Observacao" class="control-label fw-bold">Observação (Opcional)</label>
+                <textarea asp-for="Observacao" class="full-width-input" rows="3" placeholder="Cliente pediu para reagendar horário"></textarea>
+                </div>
+
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary btn-full-width">Salvar Alterações</button>
+            </div>
+        </form>
+
+        <div class="crud-links text-center mt-3">
+            <a asp-action="Index" class="text-decoration-none">Cancelar e Voltar</a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            const dataInput = document.getElementById('calendar-date');
+            const horaSelect = document.getElementById('horario-select');
+            const servicoSelect = document.getElementById('service-select');
+            const editMessage = document.getElementById('edit-message');
+            
+            const atendimentoId = @Model.AtendimentoId;
+            const dataAtual = "@dataAtual";
+            const horarioIdAtual = @horarioIdAtual;
+            const horaAtualFormatada = "@horaAtualFormatada";
+            
+            const servicosDuracao = @Html.Raw(ViewBag.ServicosDuracao ?? "[]");
+
+            function showMessage(message, type = 'error') {
+                if (editMessage) {
+                    editMessage.textContent = message;
+                    editMessage.className = 'step-message-container active ' + type;
+                    editMessage.style.color = type === 'error' ? 'red' : 'green';
+                }
+            }
+
+            async function buscarHorarios() {
+                const dataSelecionada = dataInput.value;
+                
+                if (!dataSelecionada) {
+                    horaSelect.innerHTML = '<option value="">-- Selecione a data --</option>';
+                    return;
+                }
+
+                const servicoId = parseInt(servicoSelect.value);
+                const servicoInfo = servicosDuracao.find(s => s.id === servicoId);
+                const duracaoTotal = servicoInfo ? servicoInfo.duracao : 45;
+
+                horaSelect.innerHTML = '<option value="">Buscando horários...</option>';
+                horaSelect.disabled = true;
+                if(editMessage) editMessage.textContent = "";
+
+                try {
+                    const fetchUrl = `/Admin/GetHorariosDisponiveis?data=${dataSelecionada}&duracaoTotal=${duracaoTotal}`;
+                    
+                    const response = await fetch(fetchUrl);
+                    
+                    if (!response.ok) { throw new Error('Erro ao buscar horários.'); }
+                    
+                    const horariosDisponiveis = await response.json();
+                    horaSelect.innerHTML = ''; 
+                    let horaOriginalEncontradaNaLista = false;
+
+                    if (horariosDisponiveis.length === 0) {
+                        horaSelect.innerHTML = '<option value="">-- Nenhum horário livre --</option>';
+                    } else {
+                        const defaultOpt = document.createElement('option');
+                        defaultOpt.value = "";
+                        defaultOpt.textContent = "-- Selecione --";
+                        horaSelect.appendChild(defaultOpt);
+
+                        horariosDisponiveis.forEach(h => {
+                            const option = document.createElement('option');
+                            option.value = h.horarioId; 
+                            option.textContent = h.horario; 
+                            
+                            if (dataSelecionada === dataAtual && h.horarioId === horarioIdAtual) {
+                                option.textContent += " (Atual)";
+                                horaOriginalEncontradaNaLista = true;
+                            }
+                            horaSelect.appendChild(option);
+                        });
+                    }
+                    
+                    if (dataSelecionada === dataAtual && !horaOriginalEncontradaNaLista && horarioIdAtual > 0) {
+                        const optOriginal = document.createElement('option');
+                        optOriginal.value = horarioIdAtual;
+                        optOriginal.textContent = horaAtualFormatada + " (Atual - Mantido)";
+                        horaSelect.insertBefore(optOriginal, horaSelect.firstChild);
+                        horaSelect.value = horarioIdAtual.toString();
+                    } else if (horaOriginalEncontradaNaLista) {
+                         horaSelect.value = horarioIdAtual.toString();
+                    }
+                    
+                } catch (error) {
+                    console.error("Erro JS:", error);
+                    showMessage('Erro de conexão ao buscar horários.');
+                    horaSelect.innerHTML = '<option value="">Erro</option>';
+                } finally {
+                    horaSelect.disabled = false;
+                }
+            }
+
+            if(dataInput) dataInput.addEventListener('change', buscarHorarios);
+            if(servicoSelect) servicoSelect.addEventListener('change', buscarHorarios);
+            
+            buscarHorarios(); 
+        });
+    </script>
+}

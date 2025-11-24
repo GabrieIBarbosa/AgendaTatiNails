@@ -25,28 +25,48 @@
 <section id="servicos" class="services">
     <h2>Serviços disponíveis</h2>
     <ul class="services-grid">
-        <li class="service-card" data-id="1" data-name="Mão" data-price="45">
+        <li class="service-card">
             <img src="~/Images/Imagem_Mao.jpg" alt="Manicure mãos" />
             <div class="service-card-content">
                 <h3>Mão <span>R$45</span></h3>
                 <p>Manicure completa. Duração: 40min.</p>
-                <button class="btn-primary btn-book" data-service-id="1">Agendar</button>
+                
+                <a asp-controller="Agendamento" 
+                   asp-action="Index" 
+                   asp-route-serviceId="1" 
+                   class="btn-primary btn-book">
+                   Agendar
+                </a>
             </div>
         </li>
-        <li class="service-card" data-id="2" data-name="Pé" data-price="55">
+
+        <li class="service-card">
             <img src="~/Images/Imagem_Pe.jpg" alt="Pedicure pés" />
             <div class="service-card-content">
                 <h3>Pé <span>R$55</span></h3>
                 <p>Pedicure completo. Duração: 45min.</p>
-                <button class="btn-primary btn-book" data-service-id="2">Agendar</button>
+                
+                <a asp-controller="Agendamento" 
+                   asp-action="Index" 
+                   asp-route-serviceId="2" 
+                   class="btn-primary btn-book">
+                   Agendar
+                </a>
             </div>
         </li>
-        <li class="service-card" data-id="3" data-name="Pé e Mão" data-price="95">
+
+        <li class="service-card">
             <img src="~/Images/Imagem_Pe_e_Mao.jpg" alt="Combo Pé e Mão" />
             <div class="service-card-content">
                 <h3>Pé e Mão <span>R$95</span></h3>
                 <p>Combo manicure e pedicure. Duração: 1h20.</p>
-                <button class="btn-primary btn-book" data-service-id="3">Agendar</button>
+                
+                <a asp-controller="Agendamento" 
+                   asp-action="Index" 
+                   asp-route-serviceId="3" 
+                   class="btn-primary btn-book">
+                   Agendar
+                </a>
             </div>
         </li>
     </ul>
@@ -64,5 +84,8 @@
 
 <section id="contato" class="contact">
     <p>Dúvidas? Fale com a gente: <a href="tel:17987654321">(17) 9876-54321</a></p>
-    <a href="/Agendamento" id="btnComecarAgora" class="btn btn-primary">Começar agora</a>
+    
+    <a asp-controller="Agendamento" asp-action="Index" id="btnComecarAgora" class="btn btn-primary">
+        Começar agora
+    </a>
 </section>
