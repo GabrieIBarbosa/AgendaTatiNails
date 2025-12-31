@@ -13,7 +13,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const calendarInput = document.getElementById('calendar-date');
     const horariosGrid = document.getElementById('horariosGrid');
     
-    // --- ESTA É A LÓGICA CORRETA: 'service-select' ---
+    // --- NOVO: Seletor da Observação ---
+    const inputObservacao = document.getElementById('inputObservacao');
+    
     const serviceSelect = document.getElementById('service-select');
     
     const msgStep1 = document.getElementById('step-1-message');
@@ -86,7 +88,6 @@ document.addEventListener("DOMContentLoaded", () => {
             clearAllMessages();
             selectedDate = calendarInput.value; // YYYY-MM-DD
             
-            // --- LÓGICA CORRETA ---
             // Pega a duração do serviço ÚNICO selecionado
             const duracaoTotal = selectedService.duration; 
 
@@ -95,7 +96,6 @@ document.addEventListener("DOMContentLoaded", () => {
             showStep(stepHorarios);
 
             try {
-                // --- LÓGICA CORRETA ---
                 // Envia a 'duracaoTotal' (ex: 45 ou 90) para o C#
                 const fetchUrl = `/Agendamento/GetHorariosDisponiveis?data=${selectedDate}&duracaoTotal=${duracaoTotal}`;
                 const response = await fetch(fetchUrl);
@@ -107,7 +107,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     return;
                 }
                 
-                // O C# (que já corrigimos) filtra os slots e envia a lista correta
                 const horariosDisponiveis = await response.json();
                 if (horariosGrid) horariosGrid.innerHTML = ''; 
 
@@ -153,7 +152,6 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!selectedHorarioId) { showMessage(msgStep2, "Selecione um horário."); return; }
 
             if (!isUserAuthenticated) {
-                // (Lógica de redirecionamento)
                 showMessage(msgStep2, 'Você precisa estar logado. Redirecionando...');
                 setTimeout(() => {
                     window.location.href = `/Login/Index?ReturnUrl=${encodeURIComponent(window.location.pathname + window.location.search)}`;
@@ -161,7 +159,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            // --- LÓGICA CORRETA: Preencher com Serviço Único ---
+            // Preencher com Serviço Único
             const confirmServiceEl = document.querySelector(".confirm-service");
             const confirmDateEl = document.querySelector(".confirm-date");
             const confirmTimeEl = document.querySelector(".confirm-time");
@@ -185,10 +183,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            // --- LÓGICA : JSON com 'servicoId' (int) ---
+            // --- LÓGICA ATUALIZADA: Incluindo Observação ---
             const agendamentoData = {
                 horarioId: parseInt(selectedHorarioId),
-                servicoId: parseInt(selectedService.id)
+                servicoId: parseInt(selectedService.id),
+                observacao: inputObservacao ? inputObservacao.value : "" // Captura o valor da textarea
             };
 
             btnConfirmarAgendamento.disabled = true;
@@ -219,7 +218,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 } else {
                     const errorText = await response.text(); 
                     console.error("Erro do servidor:", errorText);
-                    showMessage(msgStep3, `Erro ao salvar: O servidor ainda não está pronto para salvar (CRUD).`);
+                    showMessage(msgStep3, `Erro ao salvar: Verifique o console.`);
                     btnConfirmarAgendamento.disabled = false;
                     if (btnVoltarHorarios) btnVoltarHorarios.disabled = false;
                 }

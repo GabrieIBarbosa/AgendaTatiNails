@@ -1,0 +1,214 @@
+/* =======================================================
+   wwwroot/css/Admin/admin-crud.css
+   Estilo para Detalhes, Cancelar e Editar (Área Administrativa)
+========================================================== */
+
+/* --- Container e Card Principal --- */
+.admin-crud-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 3rem 1rem;
+    min-height: 80vh;
+    background-color: #f8f9fa; /* Fundo levemente cinza para destacar o card */
+}
+
+.admin-crud-card {
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); /* Sombra suave */
+    width: 100%;
+    max-width: 700px; /* Um pouco mais largo que o do cliente para caber mais info */
+    overflow: hidden; /* Para o header não sair pelas bordas */
+    border: none;
+}
+
+/* --- Cabeçalhos Coloridos (Baseado na Ação) --- */
+.admin-card-header {
+    padding: 1.5rem 2rem;
+    color: white;
+    font-family: 'Montserrat', sans-serif; /* Mesma fonte do site */
+}
+
+.header-primary {
+    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); /* Azul */
+}
+
+.header-danger {
+    background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%); /* Vermelho */
+}
+
+.admin-card-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* --- Corpo do Card --- */
+.admin-card-body {
+    padding: 2rem 2.5rem;
+}
+
+/* Títulos das Seções Internas */
+.section-title {
+    font-size: 1.1rem;
+    color: #0d6efd; /* Azul padrão do bootstrap */
+    font-weight: 700;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Lista de Detalhes (Info: Valor) */
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    border-bottom: 1px dashed #eee;
+    padding-bottom: 0.5rem;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: #6c757d;
+}
+
+.detail-value {
+    font-weight: 500;
+    color: #212529;
+    text-align: right;
+}
+
+.detail-value.highlight {
+    color: #198754; /* Verde para dinheiro */
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+/* --- Caixa de Observação --- */
+.obs-box {
+    background-color: #f8f9fa;
+    border-left: 5px solid #6c757d; /* Cinza padrão */
+    padding: 1.2rem;
+    margin-top: 1.5rem;
+    border-radius: 6px;
+}
+
+.obs-box.warning {
+    border-left-color: #ffc107;
+    background-color: #fff3cd;
+}
+
+.obs-box strong {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #495057;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+}
+
+.obs-content {
+    color: #212529;
+    white-space: pre-wrap; /* Mantém a formatação do texto */
+    font-style: italic;
+}
+
+/* --- Área de Cancelamento (TextArea) --- */
+.cancel-warning-text {
+    background-color: #fff5f5;
+    border: 1px solid #feb2b2;
+    color: #c53030;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.form-cancel label {
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.form-cancel textarea {
+    width: 100%;
+    padding: 1rem;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    resize: vertical;
+    transition: border-color 0.2s;
+}
+
+.form-cancel textarea:focus {
+    border-color: #dc3545;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.25);
+}
+
+/* --- Rodapé e Botões --- */
+.admin-card-footer {
+    background-color: #f8f9fa;
+    padding: 1.5rem 2.5rem;
+    border-top: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn-admin {
+    padding: 0.6rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-back {
+    background-color: #6c757d;
+    color: white;
+}
+.btn-back:hover { background-color: #5a6268; color: white; }
+
+.btn-edit {
+    background-color: #ffc107;
+    color: #212529;
+}
+.btn-edit:hover { background-color: #e0a800; }
+
+.btn-confirm-cancel {
+    background-color: #dc3545;
+    color: white;
+}
+.btn-confirm-cancel:hover { background-color: #bb2d3b; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3); }
+
+/* Responsividade */
+@media (max-width: 576px) {
+    .admin-crud-card {
+        margin: 0 10px;
+    }
+    .admin-card-body {
+        padding: 1.5rem;
+    }
+    .detail-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .detail-value {
+        text-align: left;
+        margin-top: 2px;
+    }
+}

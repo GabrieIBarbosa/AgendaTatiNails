@@ -36,6 +36,13 @@
              
              <input type="hidden" asp-for="AtendId" />
 
+             <div class="form-group" style="margin-bottom: 20px; text-align: left;">
+                 <label for="motivo" style="font-weight: bold; display: block; margin-bottom: 5px;">Motivo do cancelamento:</label>
+                 <textarea name="motivo" id="motivo" class="form-control" rows="3" 
+                           placeholder="Ex: Tive um imprevisto no trabalho..." required 
+                           style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;"></textarea>
+             </div>
+
              <div class="crud-actions">
                   <button type="submit" class="btn btn-danger">Sim, Cancelar Agendamento</button>
                   <a asp-action="ListaServico" asp-controller="Servico" class="btn btn-secondary">Não, Voltar</a>

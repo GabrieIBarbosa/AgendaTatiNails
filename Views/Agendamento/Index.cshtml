@@ -1,6 +1,9 @@
 @model IEnumerable<AgendaTatiNails.Models.Servico>
 @{
     ViewData["Title"] = "Seu Agendamento";
+    
+    // Captura o ID pré-selecionado que veio do Controller (se houver)
+    var preSelectedId = ViewBag.PreSelectedServiceId?.ToString() ?? "";
 }
 
 @section Styles {
@@ -63,13 +66,22 @@
 
     <section id="step-confirmacao" class="agendamento-step">
         <h2>3. Confirme seu Agendamento</h2>
+        
         <div class="confirmation-summary">
             <p>Serviço: <span class="confirm-service"></span></p>
             <p>Data: <span class="confirm-date"></span></p>
             <p>Hora: <span class="confirm-time"></span></p>
             <p>Preço: <span class="confirm-price"></span></p>
         </div>
+
+        <div class="form-group-obs" style="margin-top: 20px;">
+            <label for="inputObservacao" style="display:block; font-weight:bold; margin-bottom: 5px;">Observações (Opcional):</label>
+            <textarea id="inputObservacao" class="full-width-input" rows="3" 
+                      placeholder="Ex: Tenho preferência pela cor vermelha, tenho alergia a..."></textarea>
+        </div>
+
         <p id="step-3-message" class="step-message-container"></p>
+        
         <div class="step-actions">
             <button class="btn-secondary" id="btnVoltarHorarios">Voltar</button>
             <button class="btn-primary" id="btnConfirmarAgendamento">Confirmar Agendamento</button>
@@ -79,4 +91,21 @@
 
 @section Scripts {
     <script src="~/js/agendamento-page.js" asp-append-version="true"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Pega o ID que veio do Controller (ViewBag)
+            var preSelectedId = "@preSelectedId";
+            var select = document.getElementById("service-select");
+
+            // Se tiver um ID e o select existir, seleciona e atualiza
+            if(preSelectedId && select) {
+                select.value = preSelectedId;
+                
+                // Dispara o evento 'change' para que o seu javascript principal (agendamento-page.js)
+                // perceba a mudança, calcule o preço e a duração corretamente.
+                select.dispatchEvent(new Event('change'));
+            }
+        });
+    </script>
 }

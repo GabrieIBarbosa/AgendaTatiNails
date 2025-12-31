@@ -1,106 +1,96 @@
-create database manicureBD
-go
+CREATE DATABASE manicureBD;
+GO
+USE manicureBD;
+GO
 
-use manicureBD
-go
+USE manicureBD;
+GO
 
-create table Usuarios
+
+
+
+-- 1. Tabelas de Usuários e Perfis
+CREATE TABLE Usuarios
 (
-	usuarioId		int				identity		primary key,
-	usuarioEmail	varchar(50)		not null,
-	usuarioSenha	varchar(50)		not null,
-	usuarioNome		varchar(50)		not null
-)
-go
+    usuarioId    INT           IDENTITY    PRIMARY KEY,
+    usuarioEmail VARCHAR(50)   NOT NULL UNIQUE,
+    usuarioSenha VARCHAR(50)   NOT NULL,
+    usuarioNome  VARCHAR(50)   NOT NULL
+);
+GO
 
-create table Clientes
+CREATE TABLE Clientes
 (
-	clienteId		int				references Usuarios(usuarioID) primary key,
-	clienteTelefone varchar(15)	
-)
-go
+    clienteId       INT           REFERENCES Usuarios(usuarioID) PRIMARY KEY,
+    clienteTelefone VARCHAR(15)
+);
+GO
 
-create table Colaboradores
+CREATE TABLE Colaboradores
 (
-	colabId			int				references Usuarios(usuarioId) primary key,
-)
-go
+    colabId INT REFERENCES Usuarios(usuarioId) PRIMARY KEY
+);
+GO
 
-create table Servicos
+-- 2. Tabela de Serviços
+CREATE TABLE Servicos
 (
-	servicoId		int				identity		primary key,
-	servicoDesc		varchar(100)	not null,
-	servicoDuracao	int				not null,
-	servicoPreco	money			not null,
-	servicoStatus	int				not null		check(servicoStatus in (1,2))
-)
-go
+    servicoId      INT           IDENTITY    PRIMARY KEY,
+    servicoDesc    VARCHAR(100)  NOT NULL,
+    servicoDuracao INT           NOT NULL,
+    servicoPreco   MONEY         NOT NULL,
+    servicoStatus  INT           NOT NULL    CHECK(servicoStatus IN (1,2))
+);
+GO
 
-
-create table Atendimentos
+-- 3. Tabela de Atendimentos (ALTERADA PARA 1:N)
+CREATE TABLE Atendimentos
 (
-	atendId			int				identity		primary key,
-	atendStatus		int				not null		check(atendStatus in (1,2,3)),
-	atendDataAgend	datetime		not null,
-	atendDataAtend	datetime		not null,
-	atendObs		varchar(100)	null,
-	atendPrecoFinal	money			null,
-	idCliente		int				references		Clientes(clienteId),
-	idColab			int				references		Colaboradores(colabId),
-	pagData			datetime		not null,
-	pagStatus		int				not null		check(pagStatus in (1,2)),
-)
-go
+    atendId            INT           IDENTITY    PRIMARY KEY,
+    atendStatus        INT           NOT NULL    CHECK(atendStatus IN (1,2,3)),
+    atendDataAgend     DATETIME      NOT NULL,
+    atendDataAtend     DATETIME      NOT NULL,
+    atendObs           VARCHAR(100)  NULL,
+    atendPrecoFinal    MONEY         NULL,
+    atendDataConclusao DATETIME      NULL,
+    idCliente          INT           REFERENCES Clientes(clienteId),
+    idColab            INT           REFERENCES Colaboradores(colabId),
+    idServico          INT           NOT NULL REFERENCES Servicos(servicoId),
 
-create table Horarios
+    pagData            DATETIME      NOT NULL,
+    pagStatus          INT           NOT NULL    CHECK(pagStatus IN (1,2))
+);
+GO
+
+-- 4. Tabela de Horários
+CREATE TABLE Horarios
 (
-	horarioId		int				identity		primary key,
-	horarioStatus	int				not null		check(horarioStatus in (1,2)),
-	horarioPeriodo	time			not null,
-	horarioData		date			not null,
-	idAtend			int				null			references Atendimentos(atendId)
-)
-go
+    horarioId      INT           IDENTITY    PRIMARY KEY,
+    horarioStatus  INT           NOT NULL    CHECK (horarioStatus IN (1, 2, 3),
+    horarioPeriodo TIME          NOT NULL,
+    horarioData    DATE          NOT NULL,
+    idAtend        INT           NULL        REFERENCES Atendimentos(atendId)
+);
+GO
 
-create table ServicosAtend
+
+CREATE TABLE FormasPagamento
 (
-	saDesconto		decimal(10,2)		null,
-	idAtend			int				not null		references Atendimentos(atendId),
-	idServico		int				not null		references Servicos(servicoId),
-	primary key (idAtend, idServico)
-)
-go
+    formaPagId    INT           IDENTITY    PRIMARY KEY,
+    formaPagTipo  INT           NOT NULL    CHECK(formaPagTipo IN (1,2,3,4)),
+    idAtendimento INT           NOT NULL    REFERENCES Atendimentos(atendId)
+);
+GO
 
-create table FormasPagamento
-(
-	formaPagId			int				identity		primary key,
-	formaPagTipo		int				not null		check(formaPagTipo in (1,2,3,4)),
-	idAtendimento		int				not null		references Atendimentos(atendId)
-)
-go
-
--- Procedure para Colocar Horarios a partir da demanda --
--- ========= SCRIPT 2: CRIAR O PROCEDIMENTO =========
-
+-- 5. Stored Procedure 
 CREATE PROCEDURE sp_GarantirHorariosParaData
     @Data DATE
 AS
 BEGIN
     SET DATEFIRST 7; 
-    
-    -- 1. Se os horários já existem, não faz nada.
-    IF EXISTS (SELECT 1 FROM Horarios WHERE horarioData = @Data)
-    BEGIN
-        RETURN;
-    END
+    IF EXISTS (SELECT 1 FROM Horarios WHERE horarioData = @Data) RETURN;
+    IF (DATEPART(WEEKDAY, @Data) IN (1, 7)) RETURN;
 
-    -- 2. Se for um Sábado (7) ou Domingo (1), não faz nada.
-    IF (DATEPART(WEEKDAY, @Data) IN (1, 7))
-    BEGIN
-        RETURN;
-    END
-
-    -- 3. Se chegou aqui, é um dia útil sem horários. Vamos criar!
     DECLARE @SlotAtual TIME = '08:00:00';
     DECLARE @FimDoDia TIME = '17:45:00';
     DECLARE @UltimoSlotManha TIME = '11:45:00';
@@ -109,44 +99,26 @@ BEGIN
     WHILE @SlotAtual <= @FimDoDia
     BEGIN
         INSERT INTO Horarios (horarioStatus, horarioPeriodo, horarioData, idAtend)
-        VALUES (1, @SlotAtual, @Data, NULL); -- 1 = Disponível
+        VALUES (1, @SlotAtual, @Data, NULL); 
 
-        IF (@SlotAtual = @UltimoSlotManha)
-            SET @SlotAtual = @InicioTarde;
-        ELSE
-            SET @SlotAtual = DATEADD(MINUTE, 45, @SlotAtual);
+        IF (@SlotAtual = @UltimoSlotManha) SET @SlotAtual = @InicioTarde;
+        ELSE SET @SlotAtual = DATEADD(MINUTE, 45, @SlotAtual);
     END
 END
 GO
 
--- Inserts --
--- 1.Insere os TRÊS serviços corretos (Opção B)
+-- 6. Dados Iniciais
 INSERT INTO Servicos (servicoDesc, servicoDuracao, servicoPreco, servicoStatus)
 VALUES 
-('Mão', 45, 45.00, 1),       -- ID 1 (1 slot de 45 min)
-('Pé', 45, 55.00, 1),        -- ID 2 (1 slot de 45 min)
-('Pé e Mão (Combo)', 90, 95.00, 1); -- ID 3 (2 slots de 90 min)
+('Mão', 45, 45.00, 1),
+('Pé', 45, 55.00, 1),
+('Pé e Mão (Combo)', 90, 95.00, 1);
 
--- 2. Cadastra a "Tati" (Colaborador/Admin)
 INSERT INTO Usuarios (usuarioEmail, usuarioSenha, usuarioNome)
 VALUES ('tati@email.com', 'admin123', 'Tati (Profissional)');
-DECLARE @IdColab INT = SCOPE_IDENTITY();
-INSERT INTO Colaboradores (colabId) VALUES (@IdColab);
+INSERT INTO Colaboradores (colabId) VALUES (SCOPE_IDENTITY());
 
--- 3. Cadastra um "Cliente Teste"
 INSERT INTO Usuarios (usuarioEmail, usuarioSenha, usuarioNome)
 VALUES ('cliente@email.com', 'cliente123', 'Cliente Teste');
-DECLARE @IdCliente INT = SCOPE_IDENTITY();
-INSERT INTO Clientes (clienteId, clienteTelefone)
-VALUES (@IdCliente, '11987654321');
+INSERT INTO Clientes (clienteId, clienteTelefone) VALUES (SCOPE_IDENTITY(), '11987654321');
 GO
-
-
-select * from Usuarios
-go
-
-select * from Atendimentos
-go
-
-
-

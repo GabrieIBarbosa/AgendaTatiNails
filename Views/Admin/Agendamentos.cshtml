@@ -2,7 +2,10 @@
 
 @{
     ViewData["Title"] = "Ver Agendamentos";
-    string dataPesquisada = ViewBag.DataPesquisada ?? DateTime.Today.ToString("yyyy-MM-dd");
+    
+    // Recupera as datas do Controller (ou usa HOJE se for nulo)
+    var dataInicio = ViewBag.DataInicio as DateTime? ?? DateTime.Today;
+    var dataFim = ViewBag.DataFim as DateTime? ?? DateTime.Today;
 }
 
 @section Styles {
@@ -30,17 +33,28 @@
     </div>
 
     <form method="get" asp-action="Agendamentos" class="admin-search-form">
+        
         <div class="form-group">
-            <label for="dataPesquisa">Selecione o dia para buscar:</label>
-            <input type="date" id="dataPesquisa" name="dataPesquisa" 
-                   value="@dataPesquisada" 
-                   class="form-control full-width-input" />
+            <label for="dataInicio">Data Início:</label>
+            <input type="date" id="dataInicio" name="dataInicio" 
+                   value="@dataInicio.ToString("yyyy-MM-dd")" 
+                   class="form-control" />
         </div>
-        <button type="submit" class="btn btn-primary">Buscar</button>
+
+        <div class="form-group">
+            <label for="dataFim">Data Fim:</label>
+            <input type="date" id="dataFim" name="dataFim" 
+                   value="@dataFim.ToString("yyyy-MM-dd")" 
+                   class="form-control" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            <i class="fa fa-search me-2"></i> Buscar
+        </button>
     </form>
 
     <h2 class="admin-subtitle">
-        Exibindo agendamentos para: @(DateTime.Parse(dataPesquisada).ToString("dd/MM/yyyy"))
+        Exibindo de: <strong>@dataInicio.ToString("dd/MM/yyyy")</strong> até <strong>@dataFim.ToString("dd/MM/yyyy")</strong>
     </h2>
 
     @if (Model != null && Model.Any())
@@ -51,8 +65,9 @@
                     <tr>
                         <th>Cliente</th>
                         <th>Horário</th>
-                        <th>Serviço(s)</th> <th>Status</th>
-                        <th style="min-width: 150px;">Ações</th>
+                        <th>Serviço(s)</th> 
+                        <th>Status</th>
+                        <th style="min-width: 150px;">Ações</th> 
                     </tr>
                 </thead>
                 <tbody>
@@ -71,23 +86,39 @@
                             <td>
                                 @Html.Raw(GetStatusBadge(item.AtendStatus))
                             </td>
-                            <td class="admin-actions">
+                            <td class="admin-actions" style="white-space: nowrap;">
+                                <a asp-action="Detalhes" asp-route-id="@item.AtendId" 
+                                   class="btn-sm" 
+                                   style="text-decoration: none; background-color: #0dcaf0; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-weight: 600; margin-right: 5px; display: inline-block;" 
+                                   title="Ver Detalhes">
+                                   Detalhes
+                                </a>
+
                                 @if (item.AtendStatus == 1) // 1 = Agendado
                                 {
-                                    <form asp-action="MarcarConcluido" method="post" style="display: inline;">
+                                    <a asp-action="Editar" asp-route-id="@item.AtendId" 
+                                       class="btn-sm" 
+                                       style="text-decoration: none; background-color: #ffc107; color: #000; border: none; padding: 5px 10px; border-radius: 5px; font-weight: 600; margin-right: 5px; display: inline-block;" 
+                                       title="Editar Agendamento">
+                                       Editar
+                                    </a>
+
+                                    <form asp-action="MarcarConcluido" method="post" style="display: inline-block;">
                                         <input type="hidden" name="id" value="@item.AtendId" />
                                         @Html.AntiForgeryToken()
-                                        <button type="submit" class="btn-sm btn-success" title="Marcar como Concluído">Concluir</button>
+                                        <button type="submit" class="btn-sm" 
+                                                style="background-color: #198754; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-weight: 600; margin-right: 5px; cursor: pointer;"
+                                                title="Marcar como Concluído">
+                                            Concluir
+                                        </button>
                                     </form>
-                                    <form asp-action="CancelarAdmin" method="post" style="display: inline;">
-                                        <input type="hidden" name="id" value="@item.AtendId" />
-                                        @Html.AntiForgeryToken()
-                                        <button type="submit" class="btn-sm btn-danger" title="Cancelar Agendamento">Cancelar</button>
-                                    </form>
-                                }
-                                else
-                                {
-                                    <span>-</span>
+                                    
+                                    <a asp-action="Cancelar" asp-route-id="@item.AtendId" 
+                                       class="btn-sm" 
+                                       style="text-decoration: none; background-color: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-weight: 600; cursor: pointer; display: inline-block;"
+                                       title="Cancelar Agendamento">
+                                       Cancelar
+                                    </a>
                                 }
                             </td>
                         </tr>
@@ -100,7 +131,7 @@
     {
         <div class="text-center mt-5 no-appointments">
             <img src="https://api.iconify.design/lucide-calendar-off.svg" alt="Calendário Vazio" class="no-appointments-icon" />
-            <p class="lead">Nenhum agendamento encontrado para este dia.</p>
+            <p class="lead">Nenhum agendamento encontrado neste período.</p>
         </div>
     }
 </div>

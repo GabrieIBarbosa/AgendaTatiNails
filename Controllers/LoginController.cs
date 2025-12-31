@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using AgendaTatiNails.ViewModels;
 using AgendaTatiNails.Models; 
-using AgendaTatiNails.Repositories; 
+using AgendaTatiNails.Repositories.Interfaces; // Importa a nova pasta de Interfaces
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -16,11 +16,12 @@ namespace AgendaTatiNails.Controllers
     [AllowAnonymous]
     public class LoginController : Controller
     {
-        private readonly IAgendaRepository _repository;
+        // Pede apenas o repositório de usuário
+        private readonly IUsuarioRepository _usuarioRepository;
 
-        public LoginController(IAgendaRepository repository)
+        public LoginController(IUsuarioRepository repository)
         {
-            _repository = repository;
+            _usuarioRepository = repository;
         }
 
         // =================================================================
@@ -28,7 +29,7 @@ namespace AgendaTatiNails.Controllers
         // =================================================================
 
         [HttpGet]
-        public IActionResult Index(string? returnUrl = null) // Permite nulo
+        public IActionResult Index(string? returnUrl = null) 
         {
             ViewData["ReturnUrl"] = returnUrl;
             return View();
@@ -36,18 +37,18 @@ namespace AgendaTatiNails.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Index(LoginViewModel model, string? returnUrl = null) // Permite nulo
+        public async Task<IActionResult> Index(LoginViewModel model, string? returnUrl = null) 
         {
             ViewData["ReturnUrl"] = returnUrl;
 
             if (ModelState.IsValid)
             {
-                var usuario = _repository.ObterUsuarioPorEmail(model.Email);
+                var usuario = _usuarioRepository.ObterUsuarioPorEmail(model.Email);
 
                 // TODO: Implementar HASHING DE SENHA (Prioridade 3)
                 if (usuario != null && usuario.UsuarioSenha == model.Senha)
                 {
-                    var cliente = _repository.ObterClientePorId(usuario.UsuarioId);
+                    var cliente = _usuarioRepository.ObterClientePorId(usuario.UsuarioId);
 
                     if (cliente != null)
                     {
@@ -86,7 +87,7 @@ namespace AgendaTatiNails.Controllers
         {
             if (ModelState.IsValid)
             {
-                var usuarioExistente = _repository.ObterUsuarioPorEmail(model.Email);
+                var usuarioExistente = _usuarioRepository.ObterUsuarioPorEmail(model.Email);
 
                 if (usuarioExistente != null)
                 {
@@ -109,11 +110,10 @@ namespace AgendaTatiNails.Controllers
                 Cliente clienteSalvo;
                 try
                 {
-                    clienteSalvo = _repository.AdicionarNovoCliente(novoCliente);
+                    clienteSalvo = _usuarioRepository.AdicionarNovoCliente(novoCliente);
                 }
                 catch (Exception ex)
                 {
-                    // Se o repositório deu 'throw' (ex: email duplicado no banco ou coisa do tipo)
                     Console.WriteLine($"Erro ao salvar cliente no repositório: {ex.Message}");
                     ModelState.AddModelError(string.Empty, "Ocorreu um erro ao salvar seu cadastro. Tente novamente.");
                     return View(model);
@@ -145,7 +145,7 @@ namespace AgendaTatiNails.Controllers
         {
             if (ModelState.IsValid)
             {
-                var emailExiste = _repository.ObterUsuarioPorEmail(model.Email);
+                var emailExiste = _usuarioRepository.ObterUsuarioPorEmail(model.Email);
 
                 if (emailExiste != null)
                 {
@@ -196,7 +196,6 @@ namespace AgendaTatiNails.Controllers
                 authProperties);
         }
         
-        // O parâmetro 'returnUrl' aqui agora é não-nulável
         private IActionResult RedirectToLocal(string returnUrl, string role)
         {
             if (Url.IsLocalUrl(returnUrl) && returnUrl.Length > 1)

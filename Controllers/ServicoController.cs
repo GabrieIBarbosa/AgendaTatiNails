@@ -1,6 +1,6 @@
 //Gerencia os serviços disponíveis no sistema. Exibe listas e detalhes de cada serviço para o agendamento.
 using AgendaTatiNails.Models;
-using AgendaTatiNails.Repositories;
+using AgendaTatiNails.Repositories.Interfaces; 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
@@ -12,15 +12,17 @@ namespace AgendaTatiNails.Controllers
     [Authorize(Roles = "Cliente")] // Só permite acesso a usuários autenticados com o papel "Cliente"
     public class ServicoController : Controller
     {
-        private readonly IAgendaRepository _repository;
+       
+        private readonly IAtendimentoRepository _atendimentoRepository;
 
-        public ServicoController(IAgendaRepository repository)
+        public ServicoController(IAtendimentoRepository repository) 
         {
-            _repository = repository;
+            _atendimentoRepository = repository;
         }
 
         public IActionResult Index()
         {
+            // Esta ação não usa o repositório, está OK.
             return View("~/Views/Servico/Index.cshtml");
         }
 
@@ -36,38 +38,30 @@ namespace AgendaTatiNails.Controllers
                 return Unauthorized();
             }
 
-            // Trocamos _dataService.ObterAgendamentosPorCliente por...
-            // ... _repository.ObterAtendimentosPorCliente
-            var atendimentosDoCliente = _repository.ObterAtendimentosPorCliente(clienteId);
+            var atendimentosDoCliente = _atendimentoRepository.ObterAtendimentosPorCliente(clienteId);
 
-            // 3. Enviar a lista para a View
-
-            // TODO: A View "ListaServico.cshtml" precisa ser atualizada
-            // para receber um @model List<Atendimento>
             return View(atendimentosDoCliente ?? new List<Models.Atendimento>());
-            // --- Fim da MUDANÇA 2 ---
         }
         
-        // Funções CRUD 
+        // Funções CRUD (Redirecionamentos)
+        // Estes métodos estão corretos e não precisam de alteração,
+        // pois eles apenas redirecionam para o AgendamentoController.
 
         // GET: Servico/Detalhes/5
         public IActionResult Detalhes(int id)
         {
-            // Redireciona para a ação correta no AgendamentoController
             return RedirectToAction("Detalhes", "Agendamento", new { id = id });
         }
         
         // GET: Servico/Editar/5
         public IActionResult Editar(int id)
         {
-            // Redireciona para a ação correta no AgendamentoController
             return RedirectToAction("Editar", "Agendamento", new { id = id });
         }
 
         // GET: Servico/Excluir/5
         public IActionResult Excluir(int id)
         {
-            // Redireciona para a ação correta no AgendamentoController
             return RedirectToAction("Excluir", "Agendamento", new { id = id });
         }
     }

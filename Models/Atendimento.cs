@@ -10,6 +10,7 @@ namespace AgendaTatiNails.Models
         public int AtendStatus { get; set; }
         public DateTime AtendDataAgend { get; set; }
         public DateTime AtendDataAtend { get; set; }
+        public DateTime? atendDataConclusao { get; set; }
         public string AtendObs { get; set; }
         public decimal? AtendPrecoFinal { get; set; }
         public int IdCliente { get; set; }

@@ -11,6 +11,31 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/css/Admin/admin.css" asp-append-version="true" />
+    <style>
+        /* Estilos específicos para tornar os cards clicáveis */
+        .stat-card-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            transition: transform 0.2s ease;
+        }
+        
+        .stat-card-link:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-card-link:hover .stat-card {
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+            border: 1px solid rgba(136, 14, 79, 0.2);
+        }
+
+        /* Estilos dos Alertas */
+        .alert { padding: 1rem; margin-bottom: 1rem; border: 1px solid transparent; border-radius: 8px; position: relative; }
+        .alert-success { color: #0f5132; background-color: #d1e7dd; border-color: #badbcc; }
+        .alert-danger { color: #842029; background-color: #f8d7da; border-color: #f5c2c7; }
+        .btn-close { position: absolute; top: 0.5rem; right: 0.5rem; background: transparent; border: none; font-size: 1.25rem; cursor: pointer; opacity: 0.5; }
+        .btn-close:hover { opacity: 1; }
+    </style>
 }
 
 <div class="admin-container">
@@ -37,34 +62,43 @@
     }
 
     <h2 class="admin-subtitle" style="margin-top: 1rem;">Resumo Rápido</h2>
+    
     <div class="stat-card-grid">
-        <div class="stat-card">
-            <div class="stat-card-icon icon-bg-purple">
-                <img src="https://api.iconify.design/lucide-calendar-check.svg" alt="" />
+        <a asp-controller="Admin" asp-action="Agendamentos" asp-route-dataPesquisa="@DateTime.Now.ToString("yyyy-MM-dd")" class="stat-card-link">
+            <div class="stat-card">
+                <div class="stat-card-icon icon-bg-purple">
+                    <img src="https://api.iconify.design/lucide-calendar-check.svg" alt="" />
+                </div>
+                <div class="stat-card-info">
+                    <span class="stat-card-value">@countHoje</span>
+                    <span class="stat-card-label">Agendamento(s) Hoje</span>
+                </div>
             </div>
-            <div class="stat-card-info">
-                <span class="stat-card-value">@countHoje</span>
-                <span class="stat-card-label">Agendamento(s) Hoje</span>
+        </a>
+
+        <a asp-controller="Admin" asp-action="Agendamentos" class="stat-card-link">
+            <div class="stat-card">
+                <div class="stat-card-icon icon-bg-pink">
+                    <img src="https://api.iconify.design/lucide-calendar-clock.svg" alt="" />
+                </div>
+                <div class="stat-card-info">
+                    <span class="stat-card-value">@countProximos7Dias</span>
+                    <span class="stat-card-label">Próximos 7 Dias</span>
+                </div>
             </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-card-icon icon-bg-pink">
-                <img src="https://api.iconify.design/lucide-calendar-clock.svg" alt="" />
+        </a>
+
+        <a asp-controller="Admin" asp-action="Financeiro" class="stat-card-link">
+            <div class="stat-card">
+                <div class="stat-card-icon icon-bg-green">
+                    <img src="https://api.iconify.design/lucide-dollar-sign.svg" alt="" />
+                </div>
+                <div class="stat-card-info">
+                    <span class="stat-card-value">@faturamentoHoje.ToString("C", new CultureInfo("pt-BR"))</span>
+                    <span class="stat-card-label">Faturado Hoje (Concluídos)</span>
+                </div>
             </div>
-            <div class="stat-card-info">
-                <span class="stat-card-value">@countProximos7Dias</span>
-                <span class="stat-card-label">Próximos 7 Dias</span>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-card-icon icon-bg-green">
-                <img src="https://api.iconify.design/lucide-dollar-sign.svg" alt="" />
-            </div>
-            <div class="stat-card-info">
-                <span class="stat-card-value">@faturamentoHoje.ToString("C", new CultureInfo("pt-BR"))</span>
-                <span class="stat-card-label">Faturado Hoje (Concluídos)</span>
-            </div>
-        </div>
+        </a>
     </div>
     
     <h2 class="admin-subtitle">
@@ -79,8 +113,9 @@
                     <tr>
                         <th>Cliente</th>
                         <th>Horário</th>
-                        <th>Serviço(s)</th> <th>Status</th>
-                        <th style="min-width: 150px;">Ações</th>
+                        <th>Serviço(s)</th> 
+                        <th>Status</th>
+                        <th style="min-width: 260px;">Ações</th> 
                     </tr>
                 </thead>
                 <tbody>
@@ -95,21 +130,40 @@
                             
                             <td>@Html.Raw(GetStatusBadge(item.AtendStatus))</td>
                             
-                            <td class="admin-actions">
-                                @if (item.AtendStatus == 1) // 1 = Agendado
+                            <td class="admin-actions" style="white-space: nowrap;">
+                                <a asp-action="Detalhes" asp-route-id="@item.AtendId" 
+                                   class="btn-sm" 
+                                   style="text-decoration: none; background-color: #0dcaf0; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-weight: 600; margin-right: 5px; display: inline-block;" 
+                                   title="Ver Detalhes">
+                                   Detalhes
+                                </a>
+
+                                @if (item.AtendStatus == 1) 
                                 {
-                                    <form asp-action="MarcarConcluido" method="post" style="display: inline;">
+                                    <a asp-action="Editar" asp-route-id="@item.AtendId" 
+                                       class="btn-sm" 
+                                       style="text-decoration: none; background-color: #ffc107; color: #000; border: none; padding: 5px 10px; border-radius: 5px; font-weight: 600; margin-right: 5px; display: inline-block;" 
+                                       title="Editar Agendamento">
+                                       Editar
+                                    </a>
+
+                                    <form asp-action="MarcarConcluido" method="post" style="display: inline-block;">
                                         <input type="hidden" name="id" value="@item.AtendId" />
                                         @Html.AntiForgeryToken()
-                                        <button type="submit" class="btn-sm btn-success" title="Marcar como Concluído">Concluir</button>
+                                        <button type="submit" class="btn-sm" 
+                                                style="background-color: #198754; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-weight: 600; margin-right: 5px; cursor: pointer;"
+                                                title="Marcar como Concluído">
+                                            Concluir
+                                        </button>
                                     </form>
-                                    <form asp-action="CancelarAdmin" method="post" style="display: inline;">
-                                        <input type="hidden" name="id" value="@item.AtendId" />
-                                        @Html.AntiForgeryToken()
-                                        <button type="submit" class="btn-sm btn-danger" title="Cancelar Agendamento">Cancelar</button>
-                                    </form>
+                                    
+                                    <a asp-action="Cancelar" asp-route-id="@item.AtendId" 
+                                       class="btn-sm" 
+                                       style="text-decoration: none; background-color: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-weight: 600; cursor: pointer; display: inline-block;"
+                                       title="Cancelar Agendamento">
+                                       Cancelar
+                                    </a>
                                 }
-                                else { <span>-</span> }
                             </td>
                         </tr>
                     }
@@ -140,20 +194,21 @@
 }
 
 @section Scripts {
-    @if (TempData["MensagemSucesso"] != null || TempData["MensagemErro"] != null)
-    {
-        <style>
-            .alert { padding: 1rem; margin: 0 0 1rem 0; border: 1px solid transparent; border-radius: 8px; position: relative; }
-            .alert-success { color: #0f5132; background-color: #d1e7dd; border-color: #badbcc; }
-            .alert-danger { color: #842029; background-color: #f8d7da; border-color: #f5c2c7; }
-            .btn-close { position: absolute; top: 0.5rem; right: 0.5rem; padding: 0.5rem; background: transparent; border: none; cursor: pointer; font-size: 1.2rem; opacity: 0.7; }
-        </style>
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                document.querySelectorAll('.alert .btn-close').forEach(button => {
-                    button.addEventListener('click', function() { this.closest('.alert').style.display = 'none'; });
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Script para fechar alertas
+            document.querySelectorAll('.alert .btn-close').forEach(button => {
+                button.addEventListener('click', function() {
+                    this.closest('.alert').style.display = 'none';
                 });
             });
-        </script>
-    }
+            // Script para auto-fechar alertas após 5 segundos
+            setTimeout(function() {
+                document.querySelectorAll('.alert').forEach(alert => {
+                    alert.style.opacity = '0';
+                    setTimeout(() => alert.style.display = 'none', 150);
+                });
+            }, 5000); 
+        });
+    </script>
 }
